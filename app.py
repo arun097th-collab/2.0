@@ -1,24 +1,19 @@
-# requirements:
-# pip install pyrogram tgcrypto flask
-
 from pyrogram import Client, filters
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string
+from threading import Thread
 
 # =========================
 # TELEGRAM CONFIG
 # =========================
+
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
 # =========================
-# CHANNEL USERNAME
+# BOT
 # =========================
-CHANNEL = "cm4u data"
 
-# =========================
-# BOT START
-# =========================
 bot = Client(
     "moviebot",
     api_id=API_ID,
@@ -27,116 +22,204 @@ bot = Client(
 )
 
 # =========================
-# WEBSITE
+# FLASK
 # =========================
-from flask import Flask
 
 app = Flask(__name__)
 
 # =========================
-# STORE FILES
+# STORAGE
 # =========================
+
 movies = {}
+
+# =========================
+# HOME
+# =========================
+
+@app.route("/")
+def home():
+
+    return """
+    <h1 style='font-family:Arial;text-align:center;margin-top:50px'>
+    ✅ Telegram Streaming Bot Running
+    </h1>
+    """
 
 # =========================
 # UPLOAD MOVIE
 # =========================
+
 @bot.on_message(filters.video | filters.document)
 async def upload_movie(client, message):
 
-    file_id = message.video.file_id if message.video else message.document.file_id
-    file_name = message.video.file_name if message.video else message.document.file_name
+    file = message.video or message.document
 
-    movies[file_id] = file_name
+    file_id = file.file_id
+    file_name = file.file_name or "Movie"
+    file_size = round(file.file_size / (1024 * 1024), 2)
 
-    watch_link = f"https://yourdomain.com/watch/{file_id}"
+    movies[file_id] = {
+        "name": file_name,
+        "size": file_size
+    }
+
+    watch_link = f"https://YOUR-RENDER-URL.onrender.com/watch/{file_id}"
 
     await message.reply_text(
-        f"✅ Movie Uploaded\n\n🎬 Watch Link:\n{watch_link}"
+
+f"""
+✅ Movie Added Successfully
+
+🎬 Watch Link:
+{watch_link}
+"""
+
     )
 
 # =========================
-# WEBSITE PLAYER PAGE
+# WATCH PAGE
 # =========================
+
 @app.route("/watch/<file_id>")
 def watch(file_id):
 
-    file_name = movies.get(file_id, "Movie")
+    movie = movies.get(file_id)
 
-    video_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_id}"
+    if not movie:
+        return "Movie Not Found"
 
-    html = f'''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>{file_name}</title>
+    file_name = movie["name"]
+    file_size = movie["size"]
 
-        <style>
-        body {{
-            background:#000;
-            color:white;
-            font-family:Arial;
-            text-align:center;
-        }}
+    direct_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_id}"
 
-        video {{
-            width:90%;
-            margin-top:20px;
-        }}
+    html = f"""
 
-        .btn {{
-            display:inline-block;
-            margin:10px;
-            padding:12px 25px;
-            background:red;
-            color:white;
-            text-decoration:none;
-            border-radius:10px;
-        }}
-        </style>
-    </head>
+<!DOCTYPE html>
+<html lang="en">
 
-    <body>
+<head>
 
-        <h1>{file_name}</h1>
+<meta charset="UTF-8">
 
-        <video controls>
-            <source src="{video_link}" type="video/mp4">
-        </video>
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-        <br>
+<title>{file_name}</title>
 
-        <a class="btn" href="{video_link}">
-            Download
-        </a>
+<script src="https://cdn.tailwindcss.com"></script>
 
-        <a class="btn"
-        href="intent:{video_link}#Intent;package=com.mxtech.videoplayer.ad;end">
-            Open In MX Player
-        </a>
+<style>
 
-    </body>
-    </html>
-    '''
+body{{
+background:#050018;
+font-family:Arial;
+color:white;
+}}
+
+.box{{
+max-width:500px;
+margin:auto;
+margin-top:50px;
+padding:25px;
+background:#120329;
+border-radius:20px;
+text-align:center;
+}}
+
+video{{
+width:100%;
+border-radius:15px;
+margin-top:20px;
+}}
+
+.btn{{
+display:block;
+padding:14px;
+margin-top:15px;
+border-radius:12px;
+font-weight:bold;
+text-decoration:none;
+}}
+
+.download{{
+background:#6c4cff;
+color:white;
+}}
+
+.mx{{
+background:#00b894;
+color:white;
+}}
+
+.vlc{{
+background:#ff9800;
+color:white;
+}}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h1 style="font-size:22px;font-weight:bold">
+{file_name}
+</h1>
+
+<p style="margin-top:10px;color:#aaa">
+Size : {file_size} MB
+</p>
+
+<video controls autoplay>
+
+<source
+src="{direct_link}"
+type="video/mp4">
+
+</video>
+
+<a
+class="btn download"
+href="{direct_link}">
+⬇ Download
+</a>
+
+<a
+class="btn mx"
+href="intent:{direct_link}#Intent;package=com.mxtech.videoplayer.ad;end">
+▶ Play In MX Player
+</a>
+
+<a
+class="btn vlc"
+href="intent:{direct_link}#Intent;package=org.videolan.vlc;end">
+▶ Play In VLC
+</a>
+
+</div>
+
+</body>
+</html>
+
+"""
 
     return render_template_string(html)
 
 # =========================
-# RUN FLASK
+# START
 # =========================
-if name == "main":
-
-    from threading import Thread
-
-    Thread(target=lambda: app.run(host="0.0.0.0", port=5000)).start()
-
-from flask import Flask
-
-app = Flask(__name__)
-
-@app.route("/")
-def home():
-    return "Bot Running Successfully"
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+
+    Thread(
+        target=lambda: app.run(
+            host="0.0.0.0",
+            port=10000
+        )
+    ).start()
+
+    bot.run()
