@@ -29,7 +29,7 @@ bot = Client(
 # =========================
 # WEBSITE
 # =========================
-app = Flask(name)
+app = Flask(_name_)
 
 # =========================
 # STORE FILES
