@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from flask import Flask
+from flask import Flask, render_template_string
 from threading import Thread
 import requests
 import os
@@ -8,18 +8,13 @@ import os
 # TELEGRAM CONFIG
 # =========================
 
+
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
-
 # =========================
-# WEBSITE DOMAIN
-# =========================
-RENDER_URL = "https://two-0-uzcf.onrender.com"
-
-# =========================
-# START BOT
+# BOT
 # =========================
 
 bot = Client(
@@ -30,64 +25,37 @@ bot = Client(
 )
 
 # =========================
-# FLASK APP
+# FLASK
 # =========================
 
 app = Flask(__name__)
 
 # =========================
-# HOME PAGE
+# HOME
 # =========================
 
 @app.route("/")
 def home():
+    return "Bot Running Successfully"
 
-    return """
+# =========================
+# BOT MESSAGE
+# =========================
 
-    <html>
+@bot.on_message(filters.video | filters.document)
+async def save_movie(client, message):
 
-    <head>
+    media = message.video or message.document
 
-    <title>Stream Bot</title>
+    file_id = media.file_id
 
-    <meta name="viewport"
-    content="width=device-width, initial-scale=1.0">
+    RENDER_URL = "https://two-0-uzcf.onrender.com"
 
-    <style>
+    link = f"{DOMAIN}/watch/{file_id}"
 
-    body{
-        background:#050018;
-        color:white;
-        font-family:Arial;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        height:100vh;
-        margin:0;
-        text-align:center;
-    }
-
-    h1{
-        font-size:35px;
-    }
-
-    </style>
-
-    </head>
-
-    <body>
-
-    <div>
-
-    <h1>✅ Bot Running Successfully</h1>
-
-    </div>
-
-    </body>
-
-    </html>
-
-    """
+    await message.reply_text(
+        f"✅ Uploaded Successfully\n\n🎬 Link:\n{link}"
+    )
 
 # =========================
 # WATCH PAGE
@@ -96,170 +64,137 @@ def home():
 @app.route("/watch/<file_id>")
 def watch(file_id):
 
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
+    try:
 
-    response = requests.get(url).json()
+        file = bot.get_messages("me", 1)
 
-    if not response["ok"]:
+        file_info = requests.get(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
+        ).json()
 
-        return "❌ File Not Found"
+        if not file_info["ok"]:
+            return "File Not Found"
 
-    file_path = response["result"]["file_path"]
+        file_path = file_info["result"]["file_path"]
 
-    stream_link = (
-        f"https://api.telegram.org/file/bot"
-        f"{BOT_TOKEN}/{file_path}"
-    )
+        stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
 
-    mx = (
-        f"intent:{stream_link}"
-        f"#Intent;type=video/*;"
-        f"package=com.mxtech.videoplayer.ad;end"
-    )
+        mx = f"intent:{stream_link}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end"
 
-    vlc = (
-        f"intent:{stream_link}"
-        f"#Intent;type=video/*;"
-        f"package=org.videolan.vlc;end"
-    )
+        vlc = f"intent:{stream_link}#Intent;type=video/*;package=org.videolan.vlc;end"
 
-    return f"""
+        html = f"""
 
-    <!DOCTYPE html>
+        <!DOCTYPE html>
+        <html>
+        <head>
 
-    <html>
+        <meta charset="UTF-8">
 
-    <head>
+        <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-    <meta charset="UTF-8">
+        <title>Video Player</title>
 
-    <meta name="viewport"
-    content="width=device-width, initial-scale=1.0">
+        <style>
 
-    <title>Video Player</title>
+        body{{
+            margin:0;
+            background:#050018;
+            color:white;
+            font-family:Arial;
+            text-align:center;
+            padding:20px;
+        }}
 
-    <style>
+        h1{{
+            font-size:22px;
+            margin-bottom:20px;
+        }}
 
-    body{{
-        margin:0;
-        padding:20px;
-        background:#050018;
-        color:white;
-        font-family:Arial;
-        text-align:center;
-    }}
+        video{{
+            width:100%;
+            max-width:900px;
+            border-radius:20px;
+            background:black;
+        }}
 
-    h1{{
-        margin-bottom:20px;
-    }}
+        .btn{{
+            display:block;
+            width:90%;
+            max-width:400px;
+            margin:15px auto;
+            padding:16px;
+            border-radius:14px;
+            text-decoration:none;
+            font-size:18px;
+            font-weight:bold;
+            color:white;
+        }}
 
-    video{{
-        width:100%;
-        max-width:900px;
-        border-radius:20px;
-        background:black;
-    }}
+        .download{{
+            background:#6c4cff;
+        }}
 
-    .btn{{
-        display:block;
-        margin:15px auto;
-        width:90%;
-        max-width:350px;
-        padding:15px;
-        border-radius:14px;
-        text-decoration:none;
-        color:white;
-        font-size:18px;
-        font-weight:bold;
-    }}
+        .mx{{
+            background:#00b894;
+        }}
 
-    .download{{
-        background:#6c4cff;
-    }}
+        .vlc{{
+            background:#ff3838;
+        }}
 
-    .mx{{
-        background:#00b894;
-    }}
+        </style>
 
-    .vlc{{
-        background:#ff3838;
-    }}
+        </head>
 
-    </style>
+        <body>
 
-    </head>
+        <h1>Secure Video Access</h1>
 
-    <body>
+        <video controls autoplay>
 
-    <h1>🎬 Video Player</h1>
+            <source src="{stream_link}" type="video/mp4">
 
-    <video controls autoplay>
+        </video>
 
-        <source src="{stream_link}" type="video/mp4">
+        <a class="btn download"
+        href="{stream_link}">
+        ⬇ Download
+        </a>
 
-    </video>
+        <a class="btn mx"
+        href="{mx}">
+        ▶ Play In MX Player
+        </a>
 
-    <a class="btn download"
-    href="{stream_link}">
-    ⬇ Download
-    </a>
+        <a class="btn vlc"
+        href="{vlc}">
+        ▶ Play In VLC
+        </a>
 
-    <a class="btn mx"
-    href="{mx}">
-    ▶ MX Player
-    </a>
+        </body>
+        </html>
 
-    <a class="btn vlc"
-    href="{vlc}">
-    ▶ VLC Player
-    </a>
+        """
 
-    </body>
+        return render_template_string(html)
 
-    </html>
-
-    """
+    except Exception as e:
+        return f"ERROR : {e}"
 
 # =========================
-# BOT MESSAGE
+# RUN
 # =========================
 
-@bot.on_message(filters.video | filters.document)
-async def generate_link(client, message):
-
-    media = message.video or message.document
-
-    file_id = media.file_id
-
-    link = f"{DOMAIN}/watch/{file_id}"
-
-    await message.reply_text(
-
-        f"✅ Link Generated Successfully\n\n🎬 {link}"
-
-    )
-
-# =========================
-# RUN FLASK
-# =========================
-
-def run_web():
-
+def run_flask():
     port = int(os.environ.get("PORT", 10000))
-
-    app.run(
-        host="0.0.0.0",
-        port=port
-    )
-
-# =========================
-# START BOTH
-# =========================
+    app.run(host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
 
-    Thread(target=run_web).start()
+    Thread(target=run_flask).start()
 
-    print("✅ Website Started")
+    print("Bot Started")
 
     bot.run()
