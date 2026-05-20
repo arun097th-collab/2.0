@@ -6,15 +6,14 @@ import os
 # =========================
 # TELEGRAM CONFIG
 # =========================
-
-
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
-RENDER_URL = "https://two-0-uzcf.onrender.com"
+
+
 # =========================
-# BOT
+# START BOT
 # =========================
 
 bot = Client(
@@ -25,46 +24,39 @@ bot = Client(
 )
 
 # =========================
-# FLASK
+# FLASK APP
 # =========================
 
 app = Flask(__name__)
 
 # =========================
-# STORE FILE DATA
+# STORE FILES
 # =========================
 
 movies = {}
 
 # =========================
-# BOT START
+# BOT MESSAGE
 # =========================
 
 @bot.on_message(filters.video | filters.document)
-async def upload_file(client, message):
+async def save_movie(client, message):
 
-    file = message.video or message.document
+    media = message.video or message.document
 
-    file_id = file.file_id
-    file_name = file.file_name or "Video"
-    file_size = round(file.file_size / 1024 / 1024, 2)
+    file_id = media.file_id
+    file_name = media.file_name or "Video"
 
     movies[file_id] = {
-        "name": file_name,
-        "size": file_size
+        "name": file_name
     }
 
-    link = f"{BASE_URL}/watch/{file_id}"
+    DOMAIN = "https://two-0-uzcf.onrender.com"
+
+    link = f"{DOMAIN}/watch/{file_id}"
 
     await message.reply_text(
-        f"""
-✅ Uploaded Successfully
-
-🎬 File : {file_name}
-
-🔗 Link :
-{link}
-"""
+        f"✅ Uploaded Successfully\n\n🎬 Link:\n{link}"
     )
 
 # =========================
@@ -83,146 +75,121 @@ def home():
 def watch(file_id):
 
     if file_id not in movies:
-        return "Invalid Link"
+        return "File Not Found"
 
-    data = movies[file_id]
+    file_name = movies[file_id]["name"]
 
-    file_name = data["name"]
-    file_size = data["size"]
+    stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_id}"
 
-    # TELEGRAM FILE LINK
-    direct_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_id}"
+    mx = f"intent:{stream_link}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end"
+
+    vlc = f"intent:{stream_link}#Intent;type=video/*;package=org.videolan.vlc;end"
 
     html = f"""
-<!DOCTYPE html>
-<html>
-<head>
 
-<meta charset="UTF-8">
+    <!DOCTYPE html>
+    <html>
+    <head>
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
 
-<title>{file_name}</title>
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
 
-<style>
+    <title>{file_name}</title>
 
-*{{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial;
-}}
+    <style>
 
-body{{
-background:#050018;
-color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-padding:20px;
-}}
+    body{{
+        margin:0;
+        background:#050018;
+        color:white;
+        font-family:Arial;
+        text-align:center;
+        padding:20px;
+    }}
 
-.box{{
-width:100%;
-max-width:500px;
-background:#120329;
-padding:30px;
-border-radius:25px;
-text-align:center;
-box-shadow:0 0 30px rgba(0,0,0,.5);
-}}
+    h1{{
+        font-size:22px;
+        margin-bottom:20px;
+    }}
 
-h1{{
-font-size:24px;
-margin-bottom:15px;
-word-break:break-word;
-}}
+    video{{
+        width:100%;
+        max-width:900px;
+        border-radius:20px;
+        background:black;
+    }}
 
-.size{{
-color:#aaa;
-margin-bottom:25px;
-}}
+    .btn{{
+        display:block;
+        width:90%;
+        max-width:400px;
+        margin:15px auto;
+        padding:16px;
+        border-radius:14px;
+        text-decoration:none;
+        font-size:18px;
+        font-weight:bold;
+        color:white;
+    }}
 
-.btn{{
-display:block;
-width:100%;
-padding:16px;
-margin-top:15px;
-border-radius:14px;
-text-decoration:none;
-font-weight:bold;
-font-size:17px;
-}}
+    .download{{
+        background:#6c4cff;
+    }}
 
-.download{{
-background:#6c4cff;
-color:white;
-}}
+    .mx{{
+        background:#00b894;
+    }}
 
-.mx{{
-background:#00b894;
-color:white;
-}}
+    .vlc{{
+        background:#ff3838;
+    }}
 
-.vlc{{
-background:#ff9800;
-color:white;
-}}
+    </style>
 
-</style>
+    </head>
 
-</head>
+    <body>
 
-<body>
+    <h1>{file_name}</h1>
 
-<div class="box">
+    <video controls autoplay>
 
-<h1>{file_name}</h1>
+        <source src="{stream_link}" type="video/mp4">
 
-<div class="size">
-📦 {file_size} MB
-</div>
+    </video>
 
-<a
-class="btn download"
-href="{direct_link}">
-⬇ Download
-</a>
+    <a class="btn download"
+    href="{stream_link}">
+    ⬇ Download
+    </a>
 
-<a
-class="btn mx"
-href="intent:{direct_link}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end">
-▶ Open In MX Player
-</a>
+    <a class="btn mx"
+    href="{mx}">
+    ▶ Play In MX Player
+    </a>
 
-<a
-class="btn vlc"
-href="intent:{direct_link}#Intent;type=video/*;package=org.videolan.vlc;end">
-▶ Open In VLC
-</a>
+    <a class="btn vlc"
+    href="{vlc}">
+    ▶ Play In VLC
+    </a>
 
-</div>
+    </body>
+    </html>
 
-</body>
-</html>
-"""
+    """
 
     return render_template_string(html)
 
 # =========================
-# START FLASK
+# RUN
 # =========================
 
-def run_web():
+def run_flask():
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
 
-Thread(target=run_web).start()
-
-# =========================
-# START BOT
-# =========================
+Thread(target=run_flask).start()
 
 bot.run()
