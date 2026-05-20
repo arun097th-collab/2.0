@@ -1,6 +1,7 @@
 from pyrogram import Client, filters
 from flask import Flask, render_template_string
 from threading import Thread
+import asyncio
 
 # =========================
 # CONFIG
@@ -11,6 +12,7 @@ API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
 RENDER_URL = "https://two-0-uzcf.onrender.com"
+
 
 # =========================
 # BOT
@@ -30,7 +32,7 @@ bot = Client(
 app = Flask(__name__)
 
 # =========================
-# STORE
+# STORE FILES
 # =========================
 
 movies = {}
@@ -41,10 +43,10 @@ movies = {}
 
 @app.route("/")
 def home():
-    return "Bot Running"
+    return "Bot Running Successfully"
 
 # =========================
-# UPLOAD
+# UPLOAD FILE
 # =========================
 
 @bot.on_message(filters.video | filters.document)
@@ -55,16 +57,33 @@ async def upload_movie(client, message):
     file_id = file.file_id
     file_name = file.file_name or "Movie"
 
+    # GET REAL FILE
+    tg_file = await bot.get_messages(
+        chat_id=message.chat.id,
+        message_ids=message.id
+    )
+
+    if tg_file.video:
+        file_path = tg_file.video.file_id
+    else:
+        file_path = tg_file.document.file_id
+
     # SAVE
     movies[file_id] = {
-        "name": file_name
+        "name": file_name,
+        "path": file_path
     }
 
     # LINK
     link = f"{RENDER_URL}/watch/{file_id}"
 
     await message.reply_text(
-        f"✅ Uploaded\n\n🎬 Link:\n{link}"
+        f"""
+✅ Uploaded Successfully
+
+🎬 Watch Link:
+{link}
+"""
     )
 
 # =========================
@@ -79,87 +98,96 @@ def watch(file_id):
     if not movie:
         return "❌ File Not Found"
 
-    try:
-
-        # GET REAL FILE PATH
-        tg_file = bot.get_file(file_id)
-
-        file_path = tg_file.file_path
-
-        # REAL STREAM LINK
-        stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
-
-    except Exception as e:
-        return f"ERROR : {e}"
+    # STREAM LINK
+    stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{movie['path']}"
 
     html = f"""
-    <!DOCTYPE html>
-    <html>
+<!DOCTYPE html>
+<html>
 
-    <head>
+<head>
 
-    <meta name="viewport"
-    content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
 
-    <style>
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-    body{{
-    background:#050018;
-    color:white;
-    font-family:Arial;
-    text-align:center;
-    padding:20px;
-    }}
+<title>{movie['name']}</title>
 
-    video{{
-    width:100%;
-    max-width:900px;
-    border-radius:20px;
-    background:black;
-    }}
+<style>
 
-    .btn{{
-    display:inline-block;
-    margin:10px;
-    padding:14px 25px;
-    border-radius:12px;
-    text-decoration:none;
-    color:white;
-    font-weight:bold;
-    background:#6c4cff;
-    }}
+body{{
+background:#050018;
+color:white;
+font-family:Arial;
+text-align:center;
+padding:20px;
+}}
 
-    </style>
+video{{
+width:100%;
+max-width:900px;
+border-radius:20px;
+background:black;
+margin-top:20px;
+}}
 
-    </head>
+.btns{{
+display:flex;
+gap:15px;
+justify-content:center;
+flex-wrap:wrap;
+margin-top:25px;
+}}
 
-    <body>
+.btn{{
+padding:14px 25px;
+border-radius:12px;
+background:#6c4cff;
+color:white;
+text-decoration:none;
+font-weight:bold;
+}}
 
-    <h1>{movie["name"]}</h1>
+.mx{{
+background:#00b894;
+}}
 
-    <video controls autoplay>
+</style>
 
-    <source
-    src="{stream_link}"
-    type="video/mp4">
+</head>
 
-    </video>
+<body>
 
-    <br>
+<h1>{movie['name']}</h1>
 
-    <a class="btn"
-    href="{stream_link}">
-    ⬇ Download
-    </a>
+<video controls autoplay>
 
-    <a class="btn"
-    href="intent:{stream_link}#Intent;package=com.mxtech.videoplayer.ad;end">
-    ▶ MX Player
-    </a>
+<source
+src="{stream_link}"
+type="video/mp4">
 
-    </body>
-    </html>
-    """
+</video>
+
+<div class="btns">
+
+<a
+class="btn"
+href="{stream_link}">
+⬇ Download
+</a>
+
+<a
+class="btn mx"
+href="intent:{stream_link}#Intent;package=com.mxtech.videoplayer.ad;end">
+▶ MX Player
+</a>
+
+</div>
+
+</body>
+</html>
+"""
 
     return render_template_string(html)
 
