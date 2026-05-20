@@ -79,7 +79,7 @@ async def upload_movie(client, message):
 {link}
 """
     )
-    )
+    
 
 # =========================
 # WATCH PAGE
