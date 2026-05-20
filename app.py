@@ -1,19 +1,22 @@
 from pyrogram import Client, filters
 from flask import Flask, render_template_string
 from threading import Thread
+import asyncio
 import os
 
 # =========================
-# TELEGRAM CONFIG
+# CONFIG
 # =========================
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
+RENDER_URL = "https://two-0-uzcf.onrender.com"
+
 
 
 # =========================
-# START BOT
+# BOT
 # =========================
 
 bot = Client(
@@ -24,19 +27,19 @@ bot = Client(
 )
 
 # =========================
-# FLASK APP
+# FLASK
 # =========================
 
 app = Flask(__name__)
 
 # =========================
-# STORE FILES
+# STORE
 # =========================
 
 movies = {}
 
 # =========================
-# BOT MESSAGE
+# SAVE VIDEO
 # =========================
 
 @bot.on_message(filters.video | filters.document)
@@ -50,8 +53,6 @@ async def save_movie(client, message):
     movies[file_id] = {
         "name": file_name
     }
-
-    DOMAIN = "https://two-0-uzcf.onrender.com"
 
     link = f"{DOMAIN}/watch/{file_id}"
 
@@ -68,7 +69,7 @@ def home():
     return "Bot Running Successfully"
 
 # =========================
-# WATCH PAGE
+# WATCH
 # =========================
 
 @app.route("/watch/<file_id>")
@@ -79,116 +80,142 @@ def watch(file_id):
 
     file_name = movies[file_id]["name"]
 
-    stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_id}"
+    async def get_link():
 
-    mx = f"intent:{stream_link}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end"
+        file_data = await bot.get_messages(
+            "me",
+            1
+        )
 
-    vlc = f"intent:{stream_link}#Intent;type=video/*;package=org.videolan.vlc;end"
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
 
-    html = f"""
+    file = loop.run_until_complete(
+        bot.get_file(file_id)
+    )
 
-    <!DOCTYPE html>
-    <html>
-    <head>
+    file_path = file.file_path
 
-    <meta charset="UTF-8">
+    stream_link = (
+        f"https://api.telegram.org/file/bot"
+        f"{BOT_TOKEN}/{file_path}"
+    )
 
-    <meta name="viewport"
-    content="width=device-width, initial-scale=1.0">
+    mx = (
+        f"intent:{stream_link}"
+        f"#Intent;type=video/*;"
+        f"package=com.mxtech.videoplayer.ad;end"
+    )
 
-    <title>{file_name}</title>
+    vlc = (
+        f"intent:{stream_link}"
+        f"#Intent;type=video/*;"
+        f"package=org.videolan.vlc;end"
+    )
 
-    <style>
+    return render_template_string(f"""
 
-    body{{
-        margin:0;
-        background:#050018;
-        color:white;
-        font-family:Arial;
-        text-align:center;
-        padding:20px;
-    }}
+<!DOCTYPE html>
+<html>
 
-    h1{{
-        font-size:22px;
-        margin-bottom:20px;
-    }}
+<head>
 
-    video{{
-        width:100%;
-        max-width:900px;
-        border-radius:20px;
-        background:black;
-    }}
+<meta charset="UTF-8">
 
-    .btn{{
-        display:block;
-        width:90%;
-        max-width:400px;
-        margin:15px auto;
-        padding:16px;
-        border-radius:14px;
-        text-decoration:none;
-        font-size:18px;
-        font-weight:bold;
-        color:white;
-    }}
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-    .download{{
-        background:#6c4cff;
-    }}
+<title>{file_name}</title>
 
-    .mx{{
-        background:#00b894;
-    }}
+<style>
 
-    .vlc{{
-        background:#ff3838;
-    }}
+body{{
+background:#050018;
+color:white;
+font-family:Arial;
+padding:20px;
+text-align:center;
+margin:0;
+}}
 
-    </style>
+video{{
+width:100%;
+max-width:900px;
+border-radius:20px;
+background:black;
+}}
 
-    </head>
+.btn{{
+display:block;
+margin:15px auto;
+padding:15px;
+width:90%;
+max-width:400px;
+border-radius:14px;
+font-size:18px;
+font-weight:bold;
+text-decoration:none;
+color:white;
+}}
 
-    <body>
+.download{{
+background:#6c4cff;
+}}
 
-    <h1>{file_name}</h1>
+.mx{{
+background:#00b894;
+}}
 
-    <video controls autoplay>
+.vlc{{
+background:#ff3838;
+}}
 
-        <source src="{stream_link}" type="video/mp4">
+</style>
 
-    </video>
+</head>
 
-    <a class="btn download"
-    href="{stream_link}">
-    ⬇ Download
-    </a>
+<body>
 
-    <a class="btn mx"
-    href="{mx}">
-    ▶ Play In MX Player
-    </a>
+<h1>{file_name}</h1>
 
-    <a class="btn vlc"
-    href="{vlc}">
-    ▶ Play In VLC
-    </a>
+<video controls autoplay>
 
-    </body>
-    </html>
+<source src="{stream_link}" type="video/mp4">
 
-    """
+</video>
 
-    return render_template_string(html)
+<a class="btn download"
+href="{stream_link}">
+⬇ Download
+</a>
+
+<a class="btn mx"
+href="{mx}">
+▶ MX Player
+</a>
+
+<a class="btn vlc"
+href="{vlc}">
+▶ VLC Player
+</a>
+
+</body>
+</html>
+
+""")
 
 # =========================
 # RUN
 # =========================
 
 def run_flask():
+
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
 
 if __name__ == "__main__":
 
