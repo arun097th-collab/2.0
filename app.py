@@ -56,18 +56,19 @@ async def upload_movie(client, message):
     file_id = file.file_id
     file_name = file.file_name or "Movie"
 
-    # GET REAL FILE PATH
-    telegram_file = await bot.get_file(file_id)
+    # REAL TELEGRAM FILE
+    tg_file = await bot.get_file(file_id)
 
-    file_path = telegram_file.file_path
+    # REAL FILE PATH
+    real_file_path = tg_file.file_path
 
-    # SAVE DATA
+    # SAVE
     movies[file_id] = {
         "name": file_name,
-        "path": file_path
+        "path": real_file_path
     }
 
-    # CREATE LINK
+    # LINK
     link = f"{RENDER_URL}/watch/{file_id}"
 
     await message.reply_text(
@@ -77,6 +78,7 @@ async def upload_movie(client, message):
 🎬 Watch Link:
 {link}
 """
+    )
     )
 
 # =========================
