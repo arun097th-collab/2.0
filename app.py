@@ -46,8 +46,93 @@ def home():
 @app.route("/watch/<file_id>")
 def watch(file_id):
 
-    stream = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_id}"
+   @app.route("/watch/<file_id>")
+def watch(file_id):
 
+    async def get_file():
+
+        file = await bot.get_messages(
+            chat_id="me",
+            message_ids=1
+        )
+
+    import requests
+
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
+
+    res = requests.get(url).json()
+
+    if not res["ok"]:
+        return "File Not Found"
+
+    file_path = res["result"]["file_path"]
+
+    stream = (
+        f"https://api.telegram.org/file/bot"
+        f"{BOT_TOKEN}/{file_path}"
+    )
+
+    return f"""
+
+    <html>
+
+    <head>
+
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+    <style>
+
+    body{{
+    background:#050018;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+    padding:20px;
+    }}
+
+    video{{
+    width:100%;
+    border-radius:20px;
+    }}
+
+    a{{
+    display:block;
+    margin:15px auto;
+    padding:15px;
+    width:90%;
+    max-width:350px;
+    background:#6c4cff;
+    color:white;
+    text-decoration:none;
+    border-radius:12px;
+    font-size:18px;
+    font-weight:bold;
+    }}
+
+    </style>
+
+    </head>
+
+    <body>
+
+    <h1>Video Player</h1>
+
+    <video controls autoplay>
+
+    <source src="{stream}" type="video/mp4">
+
+    </video>
+
+    <a href="{stream}">
+    ⬇ Download
+    </a>
+
+    </body>
+
+    </html>
+
+    """
     return f"""
 
     <html>
