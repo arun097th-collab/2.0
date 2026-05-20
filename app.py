@@ -2,10 +2,9 @@ from pyrogram import Client, filters
 from flask import Flask, render_template_string
 from threading import Thread
 
-# =========================
+# ====================================
 # CONFIG
-# =========================
-
+# ====================================
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
@@ -13,9 +12,9 @@ BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 RENDER_URL = "https://two-0-uzcf.onrender.com"
 
 
-# =========================
+# ====================================
 # BOT
-# =========================
+# ====================================
 
 bot = Client(
     "moviebot",
@@ -24,66 +23,73 @@ bot = Client(
     bot_token=BOT_TOKEN
 )
 
-# =========================
+# ====================================
 # FLASK
-# =========================
+# ====================================
 
 app = Flask(__name__)
 
-# =========================
+# ====================================
 # STORE FILES
-# =========================
+# ====================================
 
 movies = {}
 
-# =========================
+# ====================================
 # HOME
-# =========================
+# ====================================
 
 @app.route("/")
 def home():
     return "Bot Running Successfully"
 
-# =========================
+# ====================================
 # UPLOAD VIDEO / FILE
-# =========================
+# ====================================
 
 @bot.on_message(filters.video | filters.document)
 async def upload_movie(client, message):
 
-    file = message.video or message.document
+    try:
 
-    file_id = file.file_id
-    file_name = file.file_name or "Movie"
+        file = message.video or message.document
 
-    # REAL TELEGRAM FILE
-    tg_file = await bot.get_file(file_id)
+        file_id = file.file_id
+        file_name = file.file_name or "Movie"
 
-    # REAL FILE PATH
-    real_file_path = tg_file.file_path
+        # GET REAL FILE
+        telegram_file = await bot.get_file(file_id)
 
-    # SAVE
-    movies[file_id] = {
-        "name": file_name,
-        "path": real_file_path
-    }
+        # REAL PATH
+        real_file_path = telegram_file.file_path
 
-    # LINK
-    link = f"{RENDER_URL}/watch/{file_id}"
+        # SAVE
+        movies[file_id] = {
+            "name": file_name,
+            "path": real_file_path
+        }
 
-    await message.reply_text(
-        f"""
+        # CREATE LINK
+        watch_link = f"{RENDER_URL}/watch/{file_id}"
+
+        await message.reply_text(
+            f"""
 ✅ Uploaded Successfully
 
 🎬 Watch Link:
-{link}
+{watch_link}
 """
-    )
-    
+        )
 
-# =========================
+    except Exception as e:
+
+        await message.reply_text(
+            f"ERROR : {e}"
+        )
+
+# ====================================
 # WATCH PAGE
-# =========================
+# ====================================
 
 @app.route("/watch/<path:file_id>")
 def watch(file_id):
@@ -186,19 +192,25 @@ type="video/mp4">
 class="btn"
 href="{stream_link}"
 download>
+
 ⬇ Download
+
 </a>
 
 <a
 class="btn mx"
 href="intent:{stream_link}#Intent;action=android.intent.action.VIEW;type=video/*;package=com.mxtech.videoplayer.ad;end">
+
 ▶ MX Player
+
 </a>
 
 <a
 class="btn vlc"
 href="intent:{stream_link}#Intent;action=android.intent.action.VIEW;type=video/*;package=org.videolan.vlc;end">
+
 ▶ VLC Player
+
 </a>
 
 </div>
@@ -211,19 +223,20 @@ href="intent:{stream_link}#Intent;action=android.intent.action.VIEW;type=video/*
 
     return render_template_string(html)
 
-# =========================
+# ====================================
 # RUN FLASK
-# =========================
+# ====================================
 
 def run_flask():
+
     app.run(
         host="0.0.0.0",
         port=10000
     )
 
-# =========================
+# ====================================
 # MAIN
-# =========================
+# ====================================
 
 if __name__ == "__main__":
 
