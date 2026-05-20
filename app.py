@@ -1,7 +1,6 @@
 from pyrogram import Client, filters
 from flask import Flask, render_template_string
 from threading import Thread
-import asyncio
 
 # =========================
 # CONFIG
@@ -46,7 +45,7 @@ def home():
     return "Bot Running Successfully"
 
 # =========================
-# UPLOAD FILE
+# UPLOAD VIDEO / FILE
 # =========================
 
 @bot.on_message(filters.video | filters.document)
@@ -57,24 +56,18 @@ async def upload_movie(client, message):
     file_id = file.file_id
     file_name = file.file_name or "Movie"
 
-    # GET REAL FILE
-    tg_file = await bot.get_messages(
-        chat_id=message.chat.id,
-        message_ids=message.id
-    )
+    # GET REAL FILE PATH
+    telegram_file = await bot.get_file(file_id)
 
-    if tg_file.video:
-        file_path = tg_file.video.file_id
-    else:
-        file_path = tg_file.document.file_id
+    file_path = telegram_file.file_path
 
-    # SAVE
+    # SAVE DATA
     movies[file_id] = {
         "name": file_name,
         "path": file_path
     }
 
-    # LINK
+    # CREATE LINK
     link = f"{RENDER_URL}/watch/{file_id}"
 
     await message.reply_text(
@@ -98,12 +91,12 @@ def watch(file_id):
     if not movie:
         return "❌ File Not Found"
 
-    # STREAM LINK
+    # REAL STREAM LINK
     stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{movie['path']}"
 
     html = f"""
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
@@ -116,17 +109,27 @@ content="width=device-width, initial-scale=1.0">
 
 <style>
 
+*{{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}}
+
 body{{
 background:#050018;
-color:white;
 font-family:Arial;
-text-align:center;
+color:white;
 padding:20px;
+text-align:center;
+}}
+
+.container{{
+max-width:900px;
+margin:auto;
 }}
 
 video{{
 width:100%;
-max-width:900px;
 border-radius:20px;
 background:black;
 margin-top:20px;
@@ -141,7 +144,7 @@ margin-top:25px;
 }}
 
 .btn{{
-padding:14px 25px;
+padding:14px 24px;
 border-radius:12px;
 background:#6c4cff;
 color:white;
@@ -153,11 +156,17 @@ font-weight:bold;
 background:#00b894;
 }}
 
+.vlc{{
+background:#ff6b00;
+}}
+
 </style>
 
 </head>
 
 <body>
+
+<div class="container">
 
 <h1>{movie['name']}</h1>
 
@@ -173,15 +182,24 @@ type="video/mp4">
 
 <a
 class="btn"
-href="{stream_link}">
+href="{stream_link}"
+download>
 ⬇ Download
 </a>
 
 <a
 class="btn mx"
-href="intent:{stream_link}#Intent;package=com.mxtech.videoplayer.ad;end">
+href="intent:{stream_link}#Intent;action=android.intent.action.VIEW;type=video/*;package=com.mxtech.videoplayer.ad;end">
 ▶ MX Player
 </a>
+
+<a
+class="btn vlc"
+href="intent:{stream_link}#Intent;action=android.intent.action.VIEW;type=video/*;package=org.videolan.vlc;end">
+▶ VLC Player
+</a>
+
+</div>
 
 </div>
 
