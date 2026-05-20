@@ -1,111 +1,101 @@
 from pyrogram import Client, filters
 from flask import Flask, render_template_string
 from threading import Thread
+import os
 
-# ====================================
-# CONFIG
-# ====================================
+# =========================
+# TELEGRAM CONFIG
+# =========================
+
+
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
 RENDER_URL = "https://two-0-uzcf.onrender.com"
-
-
-# ====================================
+# =========================
 # BOT
-# ====================================
+# =========================
 
 bot = Client(
-    "moviebot",
+    "streambot",
     api_id=API_ID,
     api_hash=API_HASH,
     bot_token=BOT_TOKEN
 )
 
-# ====================================
+# =========================
 # FLASK
-# ====================================
+# =========================
 
 app = Flask(__name__)
 
-# ====================================
-# STORE FILES
-# ====================================
+# =========================
+# STORE FILE DATA
+# =========================
 
 movies = {}
 
-# ====================================
+# =========================
+# BOT START
+# =========================
+
+@bot.on_message(filters.video | filters.document)
+async def upload_file(client, message):
+
+    file = message.video or message.document
+
+    file_id = file.file_id
+    file_name = file.file_name or "Video"
+    file_size = round(file.file_size / 1024 / 1024, 2)
+
+    movies[file_id] = {
+        "name": file_name,
+        "size": file_size
+    }
+
+    link = f"{BASE_URL}/watch/{file_id}"
+
+    await message.reply_text(
+        f"""
+✅ Uploaded Successfully
+
+🎬 File : {file_name}
+
+🔗 Link :
+{link}
+"""
+    )
+
+# =========================
 # HOME
-# ====================================
+# =========================
 
 @app.route("/")
 def home():
     return "Bot Running Successfully"
 
-# ====================================
-# UPLOAD VIDEO / FILE
-# ====================================
-
-@bot.on_message(filters.video | filters.document)
-async def upload_movie(client, message):
-
-    try:
-
-        file = message.video or message.document
-
-        file_id = file.file_id
-        file_name = file.file_name or "Movie"
-
-        # GET REAL FILE
-        telegram_file = await bot.get_file(file_id)
-
-        # REAL PATH
-        real_file_path = telegram_file.file_path
-
-        # SAVE
-        movies[file_id] = {
-            "name": file_name,
-            "path": real_file_path
-        }
-
-        # CREATE LINK
-        watch_link = f"{RENDER_URL}/watch/{file_id}"
-
-        await message.reply_text(
-            f"""
-✅ Uploaded Successfully
-
-🎬 Watch Link:
-{watch_link}
-"""
-        )
-
-    except Exception as e:
-
-        await message.reply_text(
-            f"ERROR : {e}"
-        )
-
-# ====================================
+# =========================
 # WATCH PAGE
-# ====================================
+# =========================
 
-@app.route("/watch/<path:file_id>")
+@app.route("/watch/<file_id>")
 def watch(file_id):
 
-    movie = movies.get(file_id)
+    if file_id not in movies:
+        return "Invalid Link"
 
-    if not movie:
-        return "❌ File Not Found"
+    data = movies[file_id]
 
-    # REAL STREAM LINK
-    stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{movie['path']}"
+    file_name = data["name"]
+    file_size = data["size"]
+
+    # TELEGRAM FILE LINK
+    direct_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_id}"
 
     html = f"""
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
 
 <meta charset="UTF-8">
@@ -113,7 +103,7 @@ def watch(file_id):
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
 
-<title>{movie['name']}</title>
+<title>{file_name}</title>
 
 <style>
 
@@ -121,51 +111,64 @@ content="width=device-width, initial-scale=1.0">
 margin:0;
 padding:0;
 box-sizing:border-box;
+font-family:Arial;
 }}
 
 body{{
 background:#050018;
-font-family:Arial;
 color:white;
-padding:20px;
-text-align:center;
-}}
-
-.container{{
-max-width:900px;
-margin:auto;
-}}
-
-video{{
-width:100%;
-border-radius:20px;
-background:black;
-margin-top:20px;
-}}
-
-.btns{{
 display:flex;
-gap:15px;
 justify-content:center;
-flex-wrap:wrap;
-margin-top:25px;
+align-items:center;
+min-height:100vh;
+padding:20px;
+}}
+
+.box{{
+width:100%;
+max-width:500px;
+background:#120329;
+padding:30px;
+border-radius:25px;
+text-align:center;
+box-shadow:0 0 30px rgba(0,0,0,.5);
+}}
+
+h1{{
+font-size:24px;
+margin-bottom:15px;
+word-break:break-word;
+}}
+
+.size{{
+color:#aaa;
+margin-bottom:25px;
 }}
 
 .btn{{
-padding:14px 24px;
-border-radius:12px;
-background:#6c4cff;
-color:white;
+display:block;
+width:100%;
+padding:16px;
+margin-top:15px;
+border-radius:14px;
 text-decoration:none;
 font-weight:bold;
+font-size:17px;
+}}
+
+.download{{
+background:#6c4cff;
+color:white;
 }}
 
 .mx{{
 background:#00b894;
+color:white;
 }}
 
 .vlc{{
-background:#ff6b00;
+background:#ff9800;
+color:white;
 }}
 
 </style>
@@ -174,46 +177,31 @@ background:#ff6b00;
 
 <body>
 
-<div class="container">
+<div class="box">
 
-<h1>{movie['name']}</h1>
+<h1>{file_name}</h1>
 
-<video controls autoplay>
-
-<source
-src="{stream_link}"
-type="video/mp4">
-
-</video>
-
-<div class="btns">
+<div class="size">
+📦 {file_size} MB
+</div>
 
 <a
-class="btn"
-href="{stream_link}"
-download>
-
+class="btn download"
+href="{direct_link}">
 ⬇ Download
-
 </a>
 
 <a
 class="btn mx"
-href="intent:{stream_link}#Intent;action=android.intent.action.VIEW;type=video/*;package=com.mxtech.videoplayer.ad;end">
-
-▶ MX Player
-
+href="intent:{direct_link}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end">
+▶ Open In MX Player
 </a>
 
 <a
 class="btn vlc"
-href="intent:{stream_link}#Intent;action=android.intent.action.VIEW;type=video/*;package=org.videolan.vlc;end">
-
-▶ VLC Player
-
+href="intent:{direct_link}#Intent;type=video/*;package=org.videolan.vlc;end">
+▶ Open In VLC
 </a>
-
-</div>
 
 </div>
 
@@ -223,23 +211,18 @@ href="intent:{stream_link}#Intent;action=android.intent.action.VIEW;type=video/*
 
     return render_template_string(html)
 
-# ====================================
-# RUN FLASK
-# ====================================
+# =========================
+# START FLASK
+# =========================
 
-def run_flask():
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
 
-    app.run(
-        host="0.0.0.0",
-        port=10000
-    )
+Thread(target=run_web).start()
 
-# ====================================
-# MAIN
-# ====================================
+# =========================
+# START BOT
+# =========================
 
-if __name__ == "__main__":
-
-    Thread(target=run_flask).start()
-
-    bot.run()
+bot.run()
