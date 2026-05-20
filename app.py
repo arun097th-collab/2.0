@@ -2,23 +2,19 @@ from pyrogram import Client, filters
 from flask import Flask, render_template_string
 from threading import Thread
 
-# ====================================
-# TELEGRAM CONFIG
-# ====================================
+# =========================
+# CONFIG
+# =========================
 
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
-# ====================================
-# YOUR RENDER URL
-# ====================================
+RENDER_URL = "https://two-0-uzcf.onrender.com"
 
-RENDER_URL = "https://YOUR-APP.onrender.com"
-
-# ====================================
-# START BOT
-# ====================================
+# =========================
+# BOT
+# =========================
 
 bot = Client(
     "moviebot",
@@ -27,29 +23,29 @@ bot = Client(
     bot_token=BOT_TOKEN
 )
 
-# ====================================
-# FLASK APP
-# ====================================
+# =========================
+# FLASK
+# =========================
 
 app = Flask(__name__)
 
-# ====================================
-# STORE MOVIES
-# ====================================
+# =========================
+# STORE
+# =========================
 
 movies = {}
 
-# ====================================
+# =========================
 # HOME
-# ====================================
+# =========================
 
 @app.route("/")
 def home():
-    return "Bot Running Successfully"
+    return "Bot Running"
 
-# ====================================
-# UPLOAD VIDEO / FILE
-# ====================================
+# =========================
+# UPLOAD
+# =========================
 
 @bot.on_message(filters.video | filters.document)
 async def upload_movie(client, message):
@@ -59,26 +55,21 @@ async def upload_movie(client, message):
     file_id = file.file_id
     file_name = file.file_name or "Movie"
 
-    # STORE
+    # SAVE
     movies[file_id] = {
         "name": file_name
     }
 
-    # WATCH LINK
-    watch_link = f"{RENDER_URL}/watch/{file_id}"
+    # LINK
+    link = f"{RENDER_URL}/watch/{file_id}"
 
     await message.reply_text(
-        f"""
-✅ File Uploaded Successfully
-
-🎬 Watch Link:
-{watch_link}
-"""
+        f"✅ Uploaded\n\n🎬 Link:\n{link}"
     )
 
-# ====================================
+# =========================
 # WATCH PAGE
-# ====================================
+# =========================
 
 @app.route("/watch/<path:file_id>")
 def watch(file_id):
@@ -88,118 +79,93 @@ def watch(file_id):
     if not movie:
         return "❌ File Not Found"
 
-    file_name = movie["name"]
+    try:
 
-    # TELEGRAM STREAM LINK
-    stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_id}"
+        # GET REAL FILE PATH
+        tg_file = bot.get_file(file_id)
+
+        file_path = tg_file.file_path
+
+        # REAL STREAM LINK
+        stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+
+    except Exception as e:
+        return f"ERROR : {e}"
 
     html = f"""
-<!DOCTYPE html>
-<html lang="en">
+    <!DOCTYPE html>
+    <html>
 
-<head>
-<meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+    <head>
 
-<title>{file_name}</title>
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
 
-<style>
+    <style>
 
-body{{
-background:#050018;
-color:white;
-font-family:Arial;
-padding:20px;
-text-align:center;
-}}
+    body{{
+    background:#050018;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+    padding:20px;
+    }}
 
-.video{{
-width:100%;
-max-width:900px;
-border-radius:20px;
-margin-top:20px;
-background:black;
-}}
+    video{{
+    width:100%;
+    max-width:900px;
+    border-radius:20px;
+    background:black;
+    }}
 
-.btns{{
-display:flex;
-gap:15px;
-justify-content:center;
-flex-wrap:wrap;
-margin-top:25px;
-}}
+    .btn{{
+    display:inline-block;
+    margin:10px;
+    padding:14px 25px;
+    border-radius:12px;
+    text-decoration:none;
+    color:white;
+    font-weight:bold;
+    background:#6c4cff;
+    }}
 
-.btn{{
-padding:14px 25px;
-border-radius:12px;
-text-decoration:none;
-font-weight:bold;
-color:white;
-background:#6c4cff;
-display:inline-block;
-}}
+    </style>
 
-.mx{{
-background:#00b894;
-}}
+    </head>
 
-.vlc{{
-background:#ff6b00;
-}}
+    <body>
 
-</style>
-</head>
+    <h1>{movie["name"]}</h1>
 
-<body>
+    <video controls autoplay>
 
-<h1>{file_name}</h1>
+    <source
+    src="{stream_link}"
+    type="video/mp4">
 
-<video class="video" controls autoplay>
+    </video>
 
-<source
-src="{stream_link}"
-type="video/mp4">
+    <br>
 
-</video>
+    <a class="btn"
+    href="{stream_link}">
+    ⬇ Download
+    </a>
 
-<div class="btns">
+    <a class="btn"
+    href="intent:{stream_link}#Intent;package=com.mxtech.videoplayer.ad;end">
+    ▶ MX Player
+    </a>
 
-<a
-class="btn"
-href="{stream_link}">
-
-⬇ Download
-
-</a>
-
-<a
-class="btn mx"
-href="intent:{stream_link}#Intent;package=com.mxtech.videoplayer.ad;end">
-
-▶ MX Player
-
-</a>
-
-<a
-class="btn vlc"
-href="intent:{stream_link}#Intent;package=org.videolan.vlc;end">
-
-▶ VLC Player
-
-</a>
-
-</div>
-
-</body>
-</html>
-"""
+    </body>
+    </html>
+    """
 
     return render_template_string(html)
 
-# ====================================
-# START FLASK
-# ====================================
+# =========================
+# RUN FLASK
+# =========================
 
 def run_flask():
     app.run(
@@ -207,9 +173,9 @@ def run_flask():
         port=10000
     )
 
-# ====================================
+# =========================
 # MAIN
-# ====================================
+# =========================
 
 if __name__ == "__main__":
 
