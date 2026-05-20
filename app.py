@@ -7,14 +7,14 @@ from flask import Flask, render_template_string, request
 # =========================
 # TELEGRAM CONFIG
 # =========================
-API_ID = 12345678
-API_HASH = "YOUR_API_HASH"
-BOT_TOKEN = "YOUR_BOT_TOKEN"
+API_ID = 21295053
+API_HASH = "297598578931dcc642c2519414079f8e"
+BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
 # =========================
 # CHANNEL USERNAME
 # =========================
-CHANNEL = "your_channel_username"
+CHANNEL = "cm4u data"
 
 # =========================
 # BOT START
