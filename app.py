@@ -144,9 +144,9 @@ bot = Client(
 
 @app.route("/")
 def home():
-    return "Bot Running"
+    return "Bot Running Successfully"
 
-bot.start()
-
-if name == "main":
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
+
+Important:
