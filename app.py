@@ -130,17 +130,9 @@ if name == "main":
 
     Thread(target=lambda: app.run(host="0.0.0.0", port=5000)).start()
 
-   from flask import Flask
-from pyrogram import Client
+from flask import Flask
 
 app = Flask(__name__)
-
-bot = Client(
-    "mybot",
-    api_id=21295053,
-    api_hash="297598578931dcc642c2519414079f8e",
-    bot_token="8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
-)
 
 @app.route("/")
 def home():
@@ -148,5 +140,3 @@ def home():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
-
-Important:
