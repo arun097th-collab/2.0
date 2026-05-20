@@ -190,6 +190,10 @@ def run_flask():
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
 
-Thread(target=run_flask).start()
+if __name__ == "__main__":
 
-bot.run()
+    Thread(target=run_flask).start()
+
+    print("Bot Started")
+
+    bot.run()
