@@ -130,4 +130,23 @@ if name == "main":
 
     Thread(target=lambda: app.run(host="0.0.0.0", port=5000)).start()
 
-    bot.run()
+   from flask import Flask
+from pyrogram import Client
+
+app = Flask(__name__)
+
+bot = Client(
+    "mybot",
+    api_id=21295053,
+    api_hash="297598578931dcc642c2519414079f8e",
+    bot_token="8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
+)
+
+@app.route("/")
+def home():
+    return "Bot Running"
+
+bot.start()
+
+if name == "main":
+    app.run(host="0.0.0.0", port=10000)
