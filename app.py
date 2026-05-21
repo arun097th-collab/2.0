@@ -9,10 +9,12 @@ import os
 # =========================
 
 API_ID = 21295053
-API_HASH = "YOUR_API_HASH"
+API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
-BASE_URL = "https://your-render-url.onrender.com"
+
+RENDER_URL = "https://two-0-uzcf.onrender.com"
+
 
 # =========================
 # BOT
@@ -26,45 +28,63 @@ bot = Client(
 )
 
 # =========================
-# FLASK APP
+# FLASK
 # =========================
 
 app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "✅ Stream Bot Running"
+    return "Bot Running ✅"
 
 # =========================
-# UPLOAD HANDLER
+# VIDEO UPLOAD HANDLER (FIXED)
 # =========================
 
 @bot.on_message(filters.video | filters.document)
 async def save_movie(client, message):
 
-    media = message.video or message.document
-    file_id = media.file_id
+    try:
 
-    link = f"{BASE_URL}/watch/{file_id}"
+        # SAFE MEDIA PICK
+        media = None
 
-    await message.reply_text(
-        f"🎬 Upload Successful!\n\n🔗 Watch Link:\n{link}"
-    )
+        if message.video:
+            media = message.video
+        elif message.document and "video" in (message.document.mime_type or ""):
+            media = message.document
+
+        if not media:
+            await message.reply_text("❌ Only video supported")
+            return
+
+        file_id = media.file_id
+
+        # FIXED LINK
+        link = f"{BASE_URL}/watch/{file_id}"
+
+        await message.reply_text(
+            f"🎬 Upload Successful!\n\n🔗 Watch Link:\n{link}"
+        )
+
+    except Exception as e:
+        await message.reply_text(f"ERROR: {e}")
 
 # =========================
-# WATCH PAGE (FULL SCREEN GLASS UI)
+# WATCH PAGE
 # =========================
 
 @app.route("/watch/<file_id>")
 def watch(file_id):
 
     try:
+
         file_info = requests.get(
             f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
         ).json()
 
         if not file_info["ok"]:
-            return "File Not Found"
+            return "File Not Found ❌"
 
         file_path = file_info["result"]["file_path"]
 
@@ -82,65 +102,37 @@ def watch(file_id):
 
 <style>
 
-*{{
+body {{
 margin:0;
-padding:0;
-box-sizing:border-box;
-}}
-
-html,body{{
-height:100%;
-width:100%;
+background:black;
 overflow:hidden;
-background:black;
 font-family:Arial;
-user-select:none;
 }}
 
-video{{
+video {{
 width:100%;
-height:100%;
+height:100vh;
 object-fit:cover;
-background:black;
 }}
 
-.top{{
+.top {{
 position:absolute;
-top:15px;
-left:15px;
-right:15px;
+top:10px;
+left:10px;
+right:10px;
 display:flex;
 justify-content:space-between;
-align-items:center;
 z-index:10;
 }}
 
-.logo{{
+.btn {{
 color:white;
-padding:10px 16px;
-border-radius:15px;
-background:rgba(255,255,255,0.08);
-backdrop-filter:blur(15px);
-}}
-
-.btns{{
-display:flex;
-gap:10px;
-}}
-
-.btn{{
-color:white;
-text-decoration:none;
 padding:10px 14px;
-border-radius:12px;
-background:rgba(255,255,255,0.1);
+text-decoration:none;
+border-radius:10px;
+background:rgba(255,255,255,0.15);
 backdrop-filter:blur(10px);
-font-size:14px;
 }}
-
-.download{{background:rgba(108,76,255,0.5);}}
-.mx{{background:rgba(0,184,148,0.5);}}
-.vlc{{background:rgba(255,56,56,0.5);}}
 
 </style>
 </head>
@@ -151,16 +143,12 @@ oncontextmenu="return false"
 onkeydown="return false">
 
 <div class="top">
-<div class="logo">🎬 STREAM</div>
-
-<div class="btns">
-<a class="btn download" href="{stream}">Download</a>
-<a class="btn mx" href="{mx}">MX</a>
-<a class="btn vlc" href="{vlc}">VLC</a>
-</div>
+<a class="btn" href="{stream}">Download</a>
+<a class="btn" href="{mx}">MX</a>
+<a class="btn" href="{vlc}">VLC</a>
 </div>
 
-<video controls autoplay controlsList="nodownload">
+<video controls autoplay>
 <source src="{stream}" type="video/mp4">
 </video>
 
@@ -169,10 +157,10 @@ onkeydown="return false">
 """)
 
     except Exception as e:
-        return f"Error: {e}"
+        return f"ERROR: {e}"
 
 # =========================
-# RUN SERVER
+# RUN
 # =========================
 
 def run():
