@@ -47,7 +47,7 @@ def home():
 
     <head>
 
-    <title>CM4U</title>
+    <title>Stream Bot</title>
 
     <style>
 
@@ -88,7 +88,7 @@ def home():
 
     <div class="box">
 
-    <h1>CM4U.xo.je official website </h1>
+    <h1>🎬 Stream Bot Running</h1>
 
     <p>Glass UI Streaming Server Active</p>
 
@@ -153,7 +153,7 @@ def watch(file_id):
         vlc = f"intent:{stream_link}#Intent;type=video/*;package=org.videolan.vlc;end"
 
         # PREMIUM GLASS UI
-        
+        html = f"""
 
         <!DOCTYPE html>
         <html>
@@ -165,7 +165,7 @@ def watch(file_id):
         <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-        <title>CM4U</title>
+        <title>Premium Stream</title>
 
         <style>
 
@@ -200,7 +200,6 @@ def watch(file_id):
             border-radius:30px;
 
             padding:25px;
-
         }}
 
         h1{{
@@ -209,19 +208,7 @@ def watch(file_id):
             margin-bottom:25px;
             font-size:30px;
         }}
-<!-- BOTTOM BANNER AD -->
-<div style="display:flex;justify-content:center;margin-top:15px;">
-<script>
-  atOptions = {
-    'key' : '5cf28619f37f1ae9afd5de4731cf2976',
-    'format' : 'iframe',
-    'height' : 60,
-    'width' : 468,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
-</div>
+
         video{{
             width:100%;
             border-radius:20px;
@@ -289,7 +276,7 @@ def watch(file_id):
 
         <div class="container">
 
-        <h1>CM4U.xo.je official website </h1>
+        <h1>🎬 Premium Video Stream</h1>
 
         <video controls autoplay>
 
@@ -318,9 +305,8 @@ def watch(file_id):
 
         <div class="footer">
 
-        ⚡ Fast Streaming • Secure Access 
+        ⚡ Fast Streaming • Secure Access • Glass UI
 
-</div>
         </div>
 
         </div>
@@ -329,7 +315,7 @@ def watch(file_id):
 
         </html>
 
-       
+        """
 
         return render_template_string(html)
 
