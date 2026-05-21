@@ -47,7 +47,7 @@ def home():
 
     <head>
 
-    <title>Stream Bot</title>
+    <title>CM4U</title>
 
     <style>
 
@@ -88,7 +88,7 @@ def home():
 
     <div class="box">
 
-    <h1>🎬 Stream Bot Running</h1>
+    <h1>CM4U.xo.je official website </h1>
 
     <p>Glass UI Streaming Server Active</p>
 
@@ -165,7 +165,7 @@ def watch(file_id):
         <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-        <title>Premium Stream</title>
+        <title>CM4U</title>
 
         <style>
 
@@ -209,7 +209,19 @@ def watch(file_id):
             margin-bottom:25px;
             font-size:30px;
         }}
-
+<!-- BOTTOM BANNER AD -->
+<div style="display:flex;justify-content:center;margin-top:15px;">
+<script>
+  atOptions = {
+    'key' : '5cf28619f37f1ae9afd5de4731cf2976',
+    'format' : 'iframe',
+    'height' : 60,
+    'width' : 468,
+    'params' : {}
+  };
+</script>
+<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
+</div>
         video{{
             width:100%;
             border-radius:20px;
@@ -277,7 +289,7 @@ def watch(file_id):
 
         <div class="container">
 
-        <h1>🎬 Premium Video Stream</h1>
+        <h1>CM4U.xo.je official website </h1>
 
         <video controls autoplay>
 
@@ -306,8 +318,20 @@ def watch(file_id):
 
         <div class="footer">
 
-        ⚡ Fast Streaming • Secure Access • Glass UI
-
+        ⚡ Fast Streaming • Secure Access 
+<!-- BOTTOM BANNER AD -->
+<div style="display:flex;justify-content:center;margin-top:15px;">
+<script>
+  atOptions = {
+    'key' : '5cf28619f37f1ae9afd5de4731cf2976',
+    'format' : 'iframe',
+    'height' : 60,
+    'width' : 468,
+    'params' : {}
+  };
+</script>
+<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
+</div>
         </div>
 
         </div>
