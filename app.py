@@ -133,7 +133,6 @@ def watch(file_id):
 
     try:
 
-        # TELEGRAM FILE INFO
         file_info = requests.get(
             f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
         ).json()
@@ -143,201 +142,123 @@ def watch(file_id):
 
         file_path = file_info["result"]["file_path"]
 
-        # STREAM LINK
         stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
 
-        # MX PLAYER LINK
         mx = f"intent:{stream_link}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end"
-
-        # VLC PLAYER LINK
         vlc = f"intent:{stream_link}#Intent;type=video/*;package=org.videolan.vlc;end"
 
-        # PREMIUM GLASS UI
-        html = f"""
+        return render_template_string(f"""
+<!DOCTYPE html>
+<html>
+<head>
 
-        <!DOCTYPE html>
-        <html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premium Stream</title>
 
-        <head>
+<style>
 
-        <meta charset="UTF-8">
+body{{
+margin:0;
+background:linear-gradient(135deg,#050018,#14003b,#240046);
+font-family:Arial;
+color:white;
+text-align:center;
+padding:15px;
+}}
 
-        <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+.container{{
+max-width:950px;
+margin:auto;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(20px);
+border-radius:25px;
+padding:20px;
+border:1px solid rgba(255,255,255,0.1);
+box-shadow:0 0 40px rgba(108,76,255,0.35);
+}}
 
-        <title>Premium Stream</title>
+video{{
+width:100%;
+border-radius:18px;
+background:black;
+}}
 
-        <style>
+.btn{{
+display:block;
+margin-top:12px;
+padding:14px;
+border-radius:12px;
+color:white;
+text-decoration:none;
+font-weight:bold;
+}}
 
-        *{{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-        }}
+.download{{background:#6c4cff;}}
+.mx{{background:#00b894;}}
+.vlc{{background:#ff3838;}}
 
-        body{{
-            background:
-            linear-gradient(135deg,#050018,#14003b,#240046);
-            min-height:100vh;
-            font-family:Arial;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            padding:20px;
-            overflow:auto;
-        }}
+.adbox{{
+margin:10px 0;
+display:flex;
+justify-content:center;
+}}
 
-        .container{{
-            width:100%;
-            max-width:950px;
+</style>
 
-            
+</head>
 
-            backdrop-filter:blur(20px);
+<body>
 
-            
+<div class="container">
 
-            border-radius:30px;
+<h2>🎬 Premium Stream</h2>
 
-            padding:25px;
-        }}
-
-        h1{{
-            text-align:center;
-            color:white;
-            margin-bottom:25px;
-            font-size:30px;
-        }}
-
-        video{{
-            width:100%;
-            border-radius:20px;
-            background:black;
-            outline:none;
-            box-shadow:
-            0 0 25px rgba(0,0,0,0.5);
-        }}
-
-        .buttons{{
-            margin-top:25px;
-        }}
-
-        .btn{{
-            display:block;
-            width:100%;
-            text-align:center;
-            padding:18px;
-            margin-top:15px;
-            border-radius:18px;
-            text-decoration:none;
-            color:white;
-            font-size:18px;
-            font-weight:bold;
-            transition:0.3s;
-        }}
-
-        .btn:hover{{
-            transform:scale(1.03);
-        }}
-
-        .download{{
-            background:
-            linear-gradient(45deg,#6c4cff,#8f6bff);
-            box-shadow:
-            0 0 20px rgba(108,76,255,0.5);
-        }}
-
-        .mx{{
-            background:
-            linear-gradient(45deg,#00b894,#00d2a0);
-            box-shadow:
-            0 0 20px rgba(0,184,148,0.4);
-        }}
-
-        .vlc{{
-            background:
-            linear-gradient(45deg,#ff3838,#ff5e57);
-            box-shadow:
-            0 0 20px rgba(255,56,56,0.4);
-        }}
-
-        .footer{{
-            text-align:center;
-            color:#bbb;
-            margin-top:25px;
-            font-size:14px;
-        }}
-
-        </style>
-
-        </head>
-
-        <body>
-
-        <div class="container">
-
-        <h1>🎬 Premium Video Stream</h1>
-
-        <video controls autoplay>
-
-        <source src="{stream_link}" type="video/mp4">
-
-        </video>
-
-        <div class="buttons">
-<!-- BOTTOM AD -->
-<div style="text-align:center;margin-top:10px;">
-    <!-- Adsterra banner code here -->
-    <script>
-  atOptions = {
+<!-- 🔥 TOP AD -->
+<div class="adbox">
+<script>
+  atOptions = {{
     'key' : '5cf28619f37f1ae9afd5de4731cf2976',
     'format' : 'iframe',
     'height' : 60,
     'width' : 468,
-    'params' : {}
-  };
+    'params' : {{}}
+  }};
 </script>
 <script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
+</div>
+
+<!-- VIDEO -->
+<video controls autoplay>
+<source src="{stream_link}" type="video/mp4">
+</video>
+
+<!-- 🔥 BOTTOM AD -->
+<div class="adbox">
+<script>
+  atOptions = {{
+    'key' : '5cf28619f37f1ae9afd5de4731cf2976',
+    'format' : 'iframe',
+    'height' : 60,
+    'width' : 468,
+    'params' : {{}}
+  }};
+</script>
+<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
+</div>
+
+<!-- BUTTONS -->
+<a class="btn download" href="{stream_link}">⬇ Download</a>
+<a class="btn mx" href="{mx}">▶ MX Player</a>
+<a class="btn vlc" href="{vlc}">▶ VLC Player</a>
 
 </div>
-        
 
-        <a class="btn download"
-        href="{stream_link}">
-        ⬇ Download Video
-        </a>
-
-        <a class="btn mx"
-        href="{mx}">
-        ▶ Play In MX Player
-        </a>
-
-        <a class="btn vlc"
-        href="{vlc}">
-        ▶ Play In VLC Player
-        </a>
-
-        </div>
-
-        <div class="footer">
-
-        ⚡ Fast Streaming • Secure Access • Glass UI
-
-        </div>
-
-        </div>
-
-        </body>
-
-        </html>
-
-        """
-
-        return render_template_string(html)
+</body>
+</html>
+""")
 
     except Exception as e:
-
-        return f"ERROR : {e}"
+        return f"ERROR: {e}"
 
 # =========================
 # RUN FLASK
