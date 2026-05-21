@@ -41,7 +41,64 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "Bot Running Successfully"
+    return """
+
+    <html>
+
+    <head>
+
+    <title>Stream Bot</title>
+
+    <style>
+
+    body{
+        margin:0;
+        height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        background:#050018;
+        color:white;
+        font-family:Arial;
+    }
+
+    .box{
+        background:rgba(255,255,255,0.08);
+        backdrop-filter:blur(18px);
+        padding:40px;
+        border-radius:25px;
+        border:1px solid rgba(255,255,255,0.1);
+        box-shadow:0 0 30px rgba(108,76,255,0.4);
+        text-align:center;
+    }
+
+    h1{
+        font-size:35px;
+    }
+
+    p{
+        color:#bbb;
+    }
+
+    </style>
+
+    </head>
+
+    <body>
+
+    <div class="box">
+
+    <h1>🎬 Stream Bot Running</h1>
+
+    <p>Glass UI Streaming Server Active</p>
+
+    </div>
+
+    </body>
+
+    </html>
+
+    """
 
 # =========================
 # BOT MESSAGE
@@ -56,7 +113,7 @@ async def save_movie(client, message):
 
         file_id = media.file_id
 
-        # LINK GENERATE
+        # GENERATE LINK
         link = f"{RENDER_URL}/watch/{file_id}"
 
         await message.reply_text(
@@ -64,6 +121,7 @@ async def save_movie(client, message):
         )
 
     except Exception as e:
+
         await message.reply_text(f"ERROR : {e}")
 
 # =========================
@@ -75,7 +133,7 @@ def watch(file_id):
 
     try:
 
-        # GET FILE INFO
+        # TELEGRAM FILE INFO
         file_info = requests.get(
             f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
         ).json()
@@ -88,12 +146,13 @@ def watch(file_id):
         # STREAM LINK
         stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
 
-        # MX PLAYER
+        # MX PLAYER LINK
         mx = f"intent:{stream_link}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end"
 
-        # VLC PLAYER
+        # VLC PLAYER LINK
         vlc = f"intent:{stream_link}#Intent;type=video/*;package=org.videolan.vlc;end"
 
+        # PREMIUM GLASS UI
         html = f"""
 
         <!DOCTYPE html>
@@ -106,55 +165,110 @@ def watch(file_id):
         <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-        <title>Video Player</title>
+        <title>Premium Stream</title>
 
         <style>
 
-        body{{
+        *{{
             margin:0;
-            background:#050018;
-            color:white;
+            padding:0;
+            box-sizing:border-box;
+        }}
+
+        body{{
+            background:
+            linear-gradient(135deg,#050018,#14003b,#240046);
+            min-height:100vh;
             font-family:Arial;
-            text-align:center;
+            display:flex;
+            justify-content:center;
+            align-items:center;
             padding:20px;
+            overflow:auto;
+        }}
+
+        .container{{
+            width:100%;
+            max-width:950px;
+
+            background:rgba(255,255,255,0.08);
+
+            backdrop-filter:blur(20px);
+
+            border:1px solid rgba(255,255,255,0.1);
+
+            border-radius:30px;
+
+            padding:25px;
+
+            box-shadow:
+            0 0 40px rgba(108,76,255,0.35);
         }}
 
         h1{{
-            font-size:24px;
-            margin-bottom:20px;
+            text-align:center;
+            color:white;
+            margin-bottom:25px;
+            font-size:30px;
         }}
 
         video{{
             width:100%;
-            max-width:900px;
             border-radius:20px;
             background:black;
             outline:none;
+            box-shadow:
+            0 0 25px rgba(0,0,0,0.5);
+        }}
+
+        .buttons{{
+            margin-top:25px;
         }}
 
         .btn{{
             display:block;
-            width:90%;
-            max-width:400px;
-            margin:15px auto;
-            padding:16px;
-            border-radius:14px;
+            width:100%;
+            text-align:center;
+            padding:18px;
+            margin-top:15px;
+            border-radius:18px;
             text-decoration:none;
+            color:white;
             font-size:18px;
             font-weight:bold;
-            color:white;
+            transition:0.3s;
+        }}
+
+        .btn:hover{{
+            transform:scale(1.03);
         }}
 
         .download{{
-            background:#6c4cff;
+            background:
+            linear-gradient(45deg,#6c4cff,#8f6bff);
+            box-shadow:
+            0 0 20px rgba(108,76,255,0.5);
         }}
 
         .mx{{
-            background:#00b894;
+            background:
+            linear-gradient(45deg,#00b894,#00d2a0);
+            box-shadow:
+            0 0 20px rgba(0,184,148,0.4);
         }}
 
         .vlc{{
-            background:#ff3838;
+            background:
+            linear-gradient(45deg,#ff3838,#ff5e57);
+            box-shadow:
+            0 0 20px rgba(255,56,56,0.4);
+        }}
+
+        .footer{{
+            text-align:center;
+            color:#bbb;
+            margin-top:25px;
+            font-size:14px;
         }}
 
         </style>
@@ -163,13 +277,17 @@ def watch(file_id):
 
         <body>
 
-        <h1>🎬 Secure Video Access</h1>
+        <div class="container">
+
+        <h1>🎬 Premium Video Stream</h1>
 
         <video controls autoplay>
 
-            <source src="{stream_link}" type="video/mp4">
+        <source src="{stream_link}" type="video/mp4">
 
         </video>
+
+        <div class="buttons">
 
         <a class="btn download"
         href="{stream_link}">
@@ -186,6 +304,16 @@ def watch(file_id):
         ▶ Play In VLC Player
         </a>
 
+        </div>
+
+        <div class="footer">
+
+        ⚡ Fast Streaming • Secure Access • Glass UI
+
+        </div>
+
+        </div>
+
         </body>
 
         </html>
@@ -195,6 +323,7 @@ def watch(file_id):
         return render_template_string(html)
 
     except Exception as e:
+
         return f"ERROR : {e}"
 
 # =========================
@@ -211,13 +340,13 @@ def run_flask():
     )
 
 # =========================
-# START
+# START BOT
 # =========================
 
 if __name__ == "__main__":
 
     Thread(target=run_flask).start()
 
-    print("✅ Bot Started")
+    print("✅ Premium Stream Bot Started")
 
     bot.run()
