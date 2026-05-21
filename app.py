@@ -285,6 +285,22 @@ def watch(file_id):
         </video>
 
         <div class="buttons">
+<!-- BOTTOM AD -->
+<div style="text-align:center;margin-top:10px;">
+    <!-- Adsterra banner code here -->
+    <script>
+  atOptions = {
+    'key' : '5cf28619f37f1ae9afd5de4731cf2976',
+    'format' : 'iframe',
+    'height' : 60,
+    'width' : 468,
+    'params' : {}
+  };
+</script>
+<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
+
+</div>
+        
 
         <a class="btn download"
         href="{stream_link}">
