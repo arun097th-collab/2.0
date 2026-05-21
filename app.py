@@ -169,12 +169,12 @@ padding:15px;
 .container{{
 max-width:950px;
 margin:auto;
-background:rgba(255,255,255,0.08);
-backdrop-filter:blur(20px);
-border-radius:25px;
-padding:20px;
+
+
+
+
 border:1px solid rgba(255,255,255,0.1);
-box-shadow:0 0 40px rgba(108,76,255,0.35);
+
 }}
 
 video{{
