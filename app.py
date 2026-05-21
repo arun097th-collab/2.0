@@ -8,10 +8,15 @@ import os
 # TELEGRAM CONFIG
 # =========================
 
-
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
+
+# =========================
+# DOMAIN
+# =========================
+
+RENDER_URL = "https://two-0-uzcf.onrender.com"
 
 # =========================
 # BOT
@@ -45,18 +50,21 @@ def home():
 @bot.on_message(filters.video | filters.document)
 async def save_movie(client, message):
 
-    media = message.video or message.document
+    try:
 
-    file_id = media.file_id
+        media = message.video or message.document
 
-    RENDER_URL = "https://two-0-uzcf.onrender.com"
+        file_id = media.file_id
 
-   
-link = f"{DOMAIN}/watch/{file_id}"
+        # LINK GENERATE
+        link = f"{RENDER_URL}/watch/{file_id}"
 
-    await message.reply_text(
-        f"✅ Uploaded Successfully\n\n🎬 Link:\n{link}"
-    )
+        await message.reply_text(
+            f"✅ Uploaded Successfully\n\n🎬 Link:\n{link}"
+        )
+
+    except Exception as e:
+        await message.reply_text(f"ERROR : {e}")
 
 # =========================
 # WATCH PAGE
@@ -67,27 +75,30 @@ def watch(file_id):
 
     try:
 
-        file = bot.get_messages("me", 1)
-
+        # GET FILE INFO
         file_info = requests.get(
             f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
         ).json()
 
         if not file_info["ok"]:
-            return "File Not Found"
+            return "❌ File Not Found"
 
         file_path = file_info["result"]["file_path"]
 
+        # STREAM LINK
         stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
 
+        # MX PLAYER
         mx = f"intent:{stream_link}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end"
 
+        # VLC PLAYER
         vlc = f"intent:{stream_link}#Intent;type=video/*;package=org.videolan.vlc;end"
 
         html = f"""
 
         <!DOCTYPE html>
         <html>
+
         <head>
 
         <meta charset="UTF-8">
@@ -109,7 +120,7 @@ def watch(file_id):
         }}
 
         h1{{
-            font-size:22px;
+            font-size:24px;
             margin-bottom:20px;
         }}
 
@@ -118,6 +129,7 @@ def watch(file_id):
             max-width:900px;
             border-radius:20px;
             background:black;
+            outline:none;
         }}
 
         .btn{{
@@ -151,7 +163,7 @@ def watch(file_id):
 
         <body>
 
-        <h1>Secure Video Access</h1>
+        <h1>🎬 Secure Video Access</h1>
 
         <video controls autoplay>
 
@@ -161,7 +173,7 @@ def watch(file_id):
 
         <a class="btn download"
         href="{stream_link}">
-        ⬇ Download
+        ⬇ Download Video
         </a>
 
         <a class="btn mx"
@@ -171,10 +183,11 @@ def watch(file_id):
 
         <a class="btn vlc"
         href="{vlc}">
-        ▶ Play In VLC
+        ▶ Play In VLC Player
         </a>
 
         </body>
+
         </html>
 
         """
@@ -185,17 +198,26 @@ def watch(file_id):
         return f"ERROR : {e}"
 
 # =========================
-# RUN
+# RUN FLASK
 # =========================
 
 def run_flask():
+
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
+
+# =========================
+# START
+# =========================
 
 if __name__ == "__main__":
 
     Thread(target=run_flask).start()
 
-    print("Bot Started")
+    print("✅ Bot Started")
 
     bot.run()
