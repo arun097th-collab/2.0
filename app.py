@@ -47,7 +47,7 @@ def home():
 
     <head>
 
-    <title>Stream Bot</title>
+    <title>CM4U</title>
 
     <style>
 
@@ -88,7 +88,7 @@ def home():
 
     <div class="box">
 
-    <h1>🎬 Stream Bot Running</h1>
+    <h1>CM4U.xo.je. official website</h1>
 
     <p>Glass UI Streaming Server Active</p>
 
@@ -211,7 +211,7 @@ justify-content:center;
 
 <div class="container">
 
-<h2>🎬 Premium Stream</h2>
+<h2>CM4U.xo.je. official website </h2>
 
 <!-- 🔥 TOP AD -->
 <div class="adbox">
@@ -237,6 +237,19 @@ justify-content:center;
 <source src="{stream_link}" type="video/mp4">
 </video>
 
+<!-- 🔥 BOTTOM AD -->
+<div class="adbox">
+<script>
+  atOptions = {{
+    'key' : '5cf28619f37f1ae9afd5de4731cf2976',
+    'format' : 'iframe',
+    'height' : 60,
+    'width' : 468,
+    'params' : {{}}
+  }};
+</script>
+<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
+</div>
 <!-- 🔥 BOTTOM AD -->
 <div class="adbox">
 <script>
