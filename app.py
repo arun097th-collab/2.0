@@ -153,7 +153,7 @@ def watch(file_id):
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Premium Stream</title>
+<title>CM4U</title>
 
 <style>
 
