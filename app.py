@@ -51,7 +51,7 @@ async def save_movie(client, message):
 
     RENDER_URL = "https://two-0-uzcf.onrender.com"
 
-   DOMAIN = "https://two-0-uzcf.onrender.com"
+   
 link = f"{DOMAIN}/watch/{file_id}"
 
     await message.reply_text(
