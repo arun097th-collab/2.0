@@ -153,7 +153,7 @@ def watch(file_id):
         vlc = f"intent:{stream_link}#Intent;type=video/*;package=org.videolan.vlc;end"
 
         # PREMIUM GLASS UI
-        html = f"""
+        
 
         <!DOCTYPE html>
         <html>
