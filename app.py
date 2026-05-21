@@ -319,18 +319,7 @@ def watch(file_id):
         <div class="footer">
 
         ⚡ Fast Streaming • Secure Access 
-<!-- BOTTOM BANNER AD -->
-<div style="display:flex;justify-content:center;margin-top:15px;">
-<script>
-  atOptions = {
-    'key' : '5cf28619f37f1ae9afd5de4731cf2976',
-    'format' : 'iframe',
-    'height' : 60,
-    'width' : 468,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
+
 </div>
         </div>
 
