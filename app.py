@@ -5,14 +5,18 @@ import requests
 import os
 
 # =========================
-# CONFIG
+# TELEGRAM CONFIG
 # =========================
 
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
-BASE_URL = "https://two-0-uzcf.onrender.com"
+# =========================
+# DOMAIN
+# =========================
+
+RENDER_URL = "https://two-0-uzcf.onrender.com"
 
 # =========================
 # BOT
@@ -31,12 +35,73 @@ bot = Client(
 
 app = Flask(__name__)
 
+# =========================
+# HOME
+# =========================
+
 @app.route("/")
 def home():
-    return "🎬 Stream Bot Running"
+    return """
+
+    <html>
+
+    <head>
+
+    <title>Stream Bot</title>
+
+    <style>
+
+    body{
+        margin:0;
+        height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        background:#050018;
+        color:white;
+        font-family:Arial;
+    }
+
+    .box{
+        background:rgba(255,255,255,0.08);
+        backdrop-filter:blur(18px);
+        padding:40px;
+        border-radius:25px;
+        border:1px solid rgba(255,255,255,0.1);
+        box-shadow:0 0 30px rgba(108,76,255,0.4);
+        text-align:center;
+    }
+
+    h1{
+        font-size:35px;
+    }
+
+    p{
+        color:#bbb;
+    }
+
+    </style>
+
+    </head>
+
+    <body>
+
+    <div class="box">
+
+    <h1>🎬 Stream Bot Running</h1>
+
+    <p>Glass UI Streaming Server Active</p>
+
+    </div>
+
+    </body>
+
+    </html>
+
+    """
 
 # =========================
-# UPLOAD HANDLER
+# BOT MESSAGE
 # =========================
 
 @bot.on_message(filters.video | filters.document)
@@ -44,25 +109,23 @@ async def save_movie(client, message):
 
     try:
 
-        media = message.video if message.video else message.document
-
-        if not media:
-            await message.reply_text("❌ Only video supported")
-            return
+        media = message.video or message.document
 
         file_id = media.file_id
 
-        link = f"{BASE_URL}/watch/{file_id}"
+        # GENERATE LINK
+        link = f"{RENDER_URL}/watch/{file_id}"
 
         await message.reply_text(
-            f"🎬 Upload Successful\n\n🔗 Watch Link:\n{link}"
+            f"✅ Uploaded Successfully\n\n🎬 Link:\n{link}"
         )
 
     except Exception as e:
-        await message.reply_text(f"ERROR: {e}")
+
+        await message.reply_text(f"ERROR : {e}")
 
 # =========================
-# WATCH PAGE (GLASS UI)
+# WATCH PAGE
 # =========================
 
 @app.route("/watch/<file_id>")
@@ -70,6 +133,7 @@ def watch(file_id):
 
     try:
 
+        # TELEGRAM FILE INFO
         file_info = requests.get(
             f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
         ).json()
@@ -79,138 +143,208 @@ def watch(file_id):
 
         file_path = file_info["result"]["file_path"]
 
-        stream = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+        # STREAM LINK
+        stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
 
-        mx = f"intent:{stream}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end"
-        vlc = f"intent:{stream}#Intent;type=video/*;package=org.videolan.vlc;end"
+        # MX PLAYER LINK
+        mx = f"intent:{stream_link}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end"
 
-        return render_template_string(f"""
-<!DOCTYPE html>
-<html>
-<head>
+        # VLC PLAYER LINK
+        vlc = f"intent:{stream_link}#Intent;type=video/*;package=org.videolan.vlc;end"
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glass Stream</title>
+        # PREMIUM GLASS UI
+        html = f"""
 
-<style>
+        <!DOCTYPE html>
+        <html>
 
-*{{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}}
+        <head>
 
-body{{
-height:100vh;
-width:100%;
-overflow:hidden;
-font-family:Arial;
-background:linear-gradient(135deg,#050018,#12002b,#240046);
-display:flex;
-justify-content:center;
-align-items:center;
-}}
+        <meta charset="UTF-8">
 
-.container{{
-width:95%;
-max-width:1000px;
-background:rgba(255,255,255,0.08);
-backdrop-filter:blur(20px);
-border-radius:25px;
-border:1px solid rgba(255,255,255,0.1);
-padding:20px;
-box-shadow:0 0 40px rgba(108,76,255,0.4);
-}}
+        <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-h1{{
-text-align:center;
-color:white;
-margin-bottom:15px;
-}}
+        <title>Premium Stream</title>
 
-video{{
-width:100%;
-border-radius:18px;
-background:black;
-}}
+        <style>
 
-.buttons{{
-margin-top:15px;
-display:flex;
-flex-wrap:wrap;
-gap:10px;
-justify-content:center;
-}}
+        *{{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }}
 
-.btn{{
-padding:12px 18px;
-border-radius:12px;
-text-decoration:none;
-color:white;
-font-weight:bold;
-backdrop-filter:blur(10px);
-transition:0.3s;
-}}
+        body{{
+            background:
+            linear-gradient(135deg,#050018,#14003b,#240046);
+            min-height:100vh;
+            font-family:Arial;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:20px;
+            overflow:auto;
+        }}
 
-.btn:hover{{
-transform:scale(1.05);
-}}
+        .container{{
+            width:100%;
+            max-width:950px;
 
-.download{{background:rgba(108,76,255,0.6);}}
-.mx{{background:rgba(0,184,148,0.6);}}
-.vlc{{background:rgba(255,56,56,0.6);}}
+            
 
-.footer{{
-text-align:center;
-color:#bbb;
-margin-top:10px;
-font-size:13px;
-}}
+            backdrop-filter:blur(20px);
 
-</style>
+            
 
-</head>
+            border-radius:30px;
 
-<body>
+            padding:25px;
 
-<div class="container">
+        }}
 
-<h1>🎬 Premium Glass Stream</h1>
+        h1{{
+            text-align:center;
+            color:white;
+            margin-bottom:25px;
+            font-size:30px;
+        }}
 
-<video controls autoplay controlsList="nodownload">
-<source src="{stream}" type="video/mp4">
-</video>
+        video{{
+            width:100%;
+            border-radius:20px;
+            background:black;
+            outline:none;
+            box-shadow:
+            0 0 25px rgba(0,0,0,0.5);
+        }}
 
-<div class="buttons">
+        .buttons{{
+            margin-top:25px;
+        }}
 
-<a class="btn download" href="{stream}">⬇ Download</a>
-<a class="btn mx" href="{mx}">▶ MX Player</a>
-<a class="btn vlc" href="{vlc}">▶ VLC Player</a>
+        .btn{{
+            display:block;
+            width:100%;
+            text-align:center;
+            padding:18px;
+            margin-top:15px;
+            border-radius:18px;
+            text-decoration:none;
+            color:white;
+            font-size:18px;
+            font-weight:bold;
+            transition:0.3s;
+        }}
 
-</div>
+        .btn:hover{{
+            transform:scale(1.03);
+        }}
 
-<div class="footer">
-⚡ Secure • Fast • Glass UI Stream
-</div>
+        .download{{
+            background:
+            linear-gradient(45deg,#6c4cff,#8f6bff);
+            box-shadow:
+            0 0 20px rgba(108,76,255,0.5);
+        }}
 
-</div>
+        .mx{{
+            background:
+            linear-gradient(45deg,#00b894,#00d2a0);
+            box-shadow:
+            0 0 20px rgba(0,184,148,0.4);
+        }}
 
-</body>
-</html>
-""")
+        .vlc{{
+            background:
+            linear-gradient(45deg,#ff3838,#ff5e57);
+            box-shadow:
+            0 0 20px rgba(255,56,56,0.4);
+        }}
+
+        .footer{{
+            text-align:center;
+            color:#bbb;
+            margin-top:25px;
+            font-size:14px;
+        }}
+
+        </style>
+
+        </head>
+
+        <body>
+
+        <div class="container">
+
+        <h1>🎬 Premium Video Stream</h1>
+
+        <video controls autoplay>
+
+        <source src="{stream_link}" type="video/mp4">
+
+        </video>
+
+        <div class="buttons">
+
+        <a class="btn download"
+        href="{stream_link}">
+        ⬇ Download Video
+        </a>
+
+        <a class="btn mx"
+        href="{mx}">
+        ▶ Play In MX Player
+        </a>
+
+        <a class="btn vlc"
+        href="{vlc}">
+        ▶ Play In VLC Player
+        </a>
+
+        </div>
+
+        <div class="footer">
+
+        ⚡ Fast Streaming • Secure Access • Glass UI
+
+        </div>
+
+        </div>
+
+        </body>
+
+        </html>
+
+        """
+
+        return render_template_string(html)
 
     except Exception as e:
-        return f"ERROR: {e}"
+
+        return f"ERROR : {e}"
 
 # =========================
-# RUN
+# RUN FLASK
 # =========================
 
-def run():
+def run_flask():
+
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
+
+# =========================
+# START BOT
+# =========================
 
 if __name__ == "__main__":
-    Thread(target=run).start()
-    print("🚀 Bot Started")
+
+    Thread(target=run_flask).start()
+
+    print("✅ Premium Stream Bot Started")
+
     bot.run()
