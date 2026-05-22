@@ -78,68 +78,27 @@ def watch(msg_id):
 
     try:
 
-        # GET MESSAGE FROM CHANNEL
+        # GET MESSAGE
         msg = bot.get_messages(
             CHANNEL_ID,
             msg_id
         )
 
-        # CHECK MESSAGE
+        # CHECK
         if not msg:
             return "❌ Message Not Found"
 
-        # GET MEDIA
-        media = msg.video or msg.document
-
-        # CHECK MEDIA
-        if not media:
-            return "❌ Media Not Found"
-
-        # FILE ID
-        file_id = media.file_id
-
-        # TELEGRAM FILE INFO
-        file_info = requests.get(
-
-            f"https://api.telegram.org/bot{BOT_TOKEN}/getFile",
-
-            params={
-                "file_id": file_id
-            }
-
-        ).json()
-
-        # ERROR CHECK
-        if not file_info.get("ok"):
-
-            return f"❌ Telegram Error : {file_info}"
-
-        # FILE PATH
-        file_path = file_info["result"]["file_path"]
-
-        # STREAM LINK
+        # TELEGRAM DIRECT LINK
         stream_link = (
-            f"https://api.telegram.org/file/bot"
-            f"{BOT_TOKEN}/{file_path}"
-        )
-
-        # MX PLAYER
-        mx = (
-            f"intent:{stream_link}"
-            "#Intent;type=video/*;"
-            "package=com.mxtech.videoplayer.ad;end"
-        )
-
-        # VLC PLAYER
-        vlc = (
-            f"intent:{stream_link}"
-            "#Intent;type=video/*;"
-            "package=org.videolan.vlc;end"
+            f"https://t.me/c/"
+            f"{str(CHANNEL_ID)[4:]}/"
+            f"{msg_id}"
         )
 
         return render_template_string(f"""
 
 <!DOCTYPE html>
+
 <html>
 
 <head>
@@ -155,41 +114,59 @@ content="width=device-width, initial-scale=1.0">
 
 body{{
 margin:0;
-padding:15px;
+padding:20px;
 background:
 linear-gradient(135deg,#050018,#14003b,#240046);
 font-family:Arial;
 color:white;
-text-align:center;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
 }}
 
 .container{{
-max-width:900px;
-margin:auto;
+width:100%;
+max-width:600px;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(18px);
+padding:30px;
+border-radius:25px;
+text-align:center;
+border:1px solid rgba(255,255,255,0.1);
 }}
 
-video{{
-width:100%;
-border-radius:18px;
-background:black;
+h1{{
+margin-bottom:25px;
 }}
 
 .btn{{
 display:block;
-margin-top:14px;
-padding:15px;
-border-radius:14px;
+width:100%;
+padding:18px;
+margin-top:15px;
+border-radius:16px;
 text-decoration:none;
 font-weight:bold;
+font-size:18px;
 color:white;
+transition:.3s;
 }}
 
-.download{{background:#6c4cff;}}
-.mx{{background:#00b894;}}
-.vlc{{background:#ff3838;}}
+.btn:hover{{
+transform:scale(1.03);
+}}
+
+.watch{{
+background:#6c4cff;
+}}
+
+.telegram{{
+background:#0088cc;
+}}
 
 .adbox{{
-margin:15px 0;
+margin:18px 0;
 display:flex;
 justify-content:center;
 }}
@@ -202,7 +179,7 @@ justify-content:center;
 
 <div class="container">
 
-<h2>🎬 CM4U STREAM</h2>
+<h1>🎬 CM4U STREAM</h1>
 
 <!-- TOP AD -->
 
@@ -222,13 +199,25 @@ atOptions = {{
 
 </div>
 
-<!-- VIDEO -->
+<!-- WATCH BUTTON -->
 
-<video controls autoplay preload="metadata">
+<a class="btn watch"
+href="{stream_link}"
+target="_blank">
 
-<source src="{stream_link}">
+🎥 WATCH MOVIE
 
-</video>
+</a>
+
+<!-- TELEGRAM BUTTON -->
+
+<a class="btn telegram"
+href="{stream_link}"
+target="_blank">
+
+📥 OPEN IN TELEGRAM
+
+</a>
 
 <!-- BOTTOM AD -->
 
@@ -247,23 +236,6 @@ atOptions = {{
 <script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
 
 </div>
-
-<!-- BUTTONS -->
-
-<a class="btn download"
-href="{stream_link}">
-⬇ Download
-</a>
-
-<a class="btn mx"
-href="{mx}">
-▶ MX Player
-</a>
-
-<a class="btn vlc"
-href="{vlc}">
-▶ VLC Player
-</a>
 
 </div>
 
