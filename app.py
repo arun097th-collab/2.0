@@ -78,21 +78,24 @@ def watch(msg_id):
 
     try:
 
-        with bot:
+        # GET MESSAGE FROM CHANNEL
+        msg = bot.get_messages(
+            CHANNEL_ID,
+            msg_id
+        )
 
-            msg = bot.get_messages(
-                CHANNEL_ID,
-                msg_id
-            )
-
+        # CHECK MESSAGE
         if not msg:
             return "❌ Message Not Found"
 
+        # GET MEDIA
         media = msg.video or msg.document
 
+        # CHECK MEDIA
         if not media:
             return "❌ Media Not Found"
 
+        # FILE ID
         file_id = media.file_id
 
         # TELEGRAM FILE INFO
@@ -106,7 +109,7 @@ def watch(msg_id):
 
         ).json()
 
-        # CHECK
+        # ERROR CHECK
         if not file_info.get("ok"):
 
             return f"❌ Telegram Error : {file_info}"
@@ -140,6 +143,8 @@ def watch(msg_id):
 <html>
 
 <head>
+
+<meta charset="UTF-8">
 
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
@@ -183,6 +188,12 @@ color:white;
 .mx{{background:#00b894;}}
 .vlc{{background:#ff3838;}}
 
+.adbox{{
+margin:15px 0;
+display:flex;
+justify-content:center;
+}}
+
 </style>
 
 </head>
@@ -193,11 +204,51 @@ color:white;
 
 <h2>🎬 CM4U STREAM</h2>
 
-<video controls autoplay>
+<!-- TOP AD -->
+
+<div class="adbox">
+
+<script>
+atOptions = {{
+'key' : '5cf28619f37f1ae9afd5de4731cf2976',
+'format' : 'iframe',
+'height' : 60,
+'width' : 468,
+'params' : {{}}
+}};
+</script>
+
+<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
+
+</div>
+
+<!-- VIDEO -->
+
+<video controls autoplay preload="metadata">
 
 <source src="{stream_link}">
 
 </video>
+
+<!-- BOTTOM AD -->
+
+<div class="adbox">
+
+<script>
+atOptions = {{
+'key' : '5cf28619f37f1ae9afd5de4731cf2976',
+'format' : 'iframe',
+'height' : 60,
+'width' : 468,
+'params' : {{}}
+}};
+</script>
+
+<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
+
+</div>
+
+<!-- BUTTONS -->
 
 <a class="btn download"
 href="{stream_link}">
@@ -216,6 +267,10 @@ href="{vlc}">
 
 </div>
 
+<!-- POPUNDER -->
+
+<script src="https://pl29465339.effectivecpmnetwork.com/4d/32/27/4d3227fddc75659508c78f4db2d6497e.js"></script>
+
 </body>
 
 </html>
@@ -225,7 +280,6 @@ href="{vlc}">
     except Exception as e:
 
         return f"ERROR : {e}"
-
 # =========================
 # RUN
 # =========================
