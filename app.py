@@ -88,11 +88,28 @@ def watch(msg_id):
         if not msg:
             return "❌ Message Not Found"
 
-        # TELEGRAM DIRECT LINK
-        stream_link = (
+        media = msg.video or msg.document
+
+        if not media:
+            return "❌ Media Not Found"
+
+        # DIRECT TELEGRAM LINK
+        tg_link = (
             f"https://t.me/c/"
             f"{str(CHANNEL_ID)[4:]}/"
             f"{msg_id}"
+        )
+
+        # MX PLAYER
+        mx = (
+            f"intent:{tg_link}"
+            "#Intent;package=com.mxtech.videoplayer.ad;end"
+        )
+
+        # VLC PLAYER
+        vlc = (
+            f"intent:{tg_link}"
+            "#Intent;package=org.videolan.vlc;end"
         )
 
         return render_template_string(f"""
@@ -127,7 +144,7 @@ min-height:100vh;
 
 .container{{
 width:100%;
-max-width:600px;
+max-width:650px;
 background:rgba(255,255,255,0.08);
 backdrop-filter:blur(18px);
 padding:30px;
@@ -157,12 +174,16 @@ transition:.3s;
 transform:scale(1.03);
 }}
 
-.watch{{
+.download{{
 background:#6c4cff;
 }}
 
-.telegram{{
-background:#0088cc;
+.mx{{
+background:#00b894;
+}}
+
+.vlc{{
+background:#ff3838;
 }}
 
 .adbox{{
@@ -199,23 +220,31 @@ atOptions = {{
 
 </div>
 
-<!-- WATCH BUTTON -->
+<!-- DOWNLOAD -->
 
-<a class="btn watch"
-href="{stream_link}"
+<a class="btn download"
+href="{tg_link}"
 target="_blank">
 
-🎥 WATCH MOVIE
+⬇ DOWNLOAD MOVIE
 
 </a>
 
-<!-- TELEGRAM BUTTON -->
+<!-- MX PLAYER -->
 
-<a class="btn telegram"
-href="{stream_link}"
-target="_blank">
+<a class="btn mx"
+href="{mx}">
 
-📥 OPEN IN TELEGRAM
+▶ PLAY IN MX PLAYER
+
+</a>
+
+<!-- VLC -->
+
+<a class="btn vlc"
+href="{vlc}">
+
+▶ PLAY IN VLC PLAYER
 
 </a>
 
