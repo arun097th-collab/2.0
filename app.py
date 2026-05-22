@@ -63,25 +63,25 @@ def watch(msg_id):
 
     try:
 
+        # GET MESSAGE
         msg = bot.get_messages(CHANNEL, int(msg_id))
 
+        # GET MEDIA
         media = msg.video or msg.document
 
-        file_path = bot.download_media(
-            media.file_id,
-            file_name=f"downloads/{msg_id}"
-        )
+        # DIRECT TELEGRAM FILE
+        file_info = bot.get_file(media.file_id)
 
-        filename = os.path.basename(file_path)
+        stream_link = file_info.file_path
 
-        stream_link = f"{RENDER_URL}/file/{filename}"
-
+        # MX PLAYER
         mx = (
             f"intent:{stream_link}"
             "#Intent;type=video/*;"
             "package=com.mxtech.videoplayer.ad;end"
         )
 
+        # VLC PLAYER
         vlc = (
             f"intent:{stream_link}"
             "#Intent;type=video/*;"
@@ -90,21 +90,34 @@ def watch(msg_id):
 
         return render_template_string(f"""
 
+<!DOCTYPE html>
+
 <html>
 
 <head>
 
+<meta charset="UTF-8">
+
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
+
+<title>CM4U STREAM</title>
 
 <style>
 
 body{{
-background:#050018;
-color:white;
+margin:0;
+padding:15px;
+background:
+linear-gradient(135deg,#050018,#14003b,#240046);
 font-family:Arial;
-padding:20px;
+color:white;
 text-align:center;
+}}
+
+.container{{
+max-width:900px;
+margin:auto;
 }}
 
 video{{
@@ -119,8 +132,8 @@ margin-top:15px;
 padding:15px;
 border-radius:15px;
 text-decoration:none;
-color:white;
 font-weight:bold;
+color:white;
 }}
 
 .download{{background:#6c4cff;}}
@@ -132,6 +145,8 @@ font-weight:bold;
 </head>
 
 <body>
+
+<div class="container">
 
 <h2>🎬 CM4U STREAM</h2>
 
@@ -156,6 +171,8 @@ href="{vlc}">
 ▶ VLC Player
 </a>
 
+</div>
+
 </body>
 
 </html>
@@ -170,16 +187,7 @@ href="{vlc}">
 # FILE SERVER
 # =========================
 
-@app.route("/file/<filename>")
-def file(filename):
 
-    from flask import send_from_directory
-
-    return send_from_directory(
-        "downloads",
-        filename,
-        as_attachment=False
-    )
 
 # =========================
 # RUN
@@ -189,7 +197,7 @@ def run_flask():
 
     port = int(os.environ.get("PORT", 10000))
 
-    os.makedirs("downloads", exist_ok=True)
+    
 
     app.run(
         host="0.0.0.0",
