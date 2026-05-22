@@ -13,7 +13,7 @@ API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
 # CHANNEL USERNAME
-CHANNEL_ID = "@cm4u data"
+CHANNEL_ID = "@cm4umovies"
 
 RENDER_URL = "https://two-0-uzcf.onrender.com"
 
