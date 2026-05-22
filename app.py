@@ -78,38 +78,56 @@ def watch(msg_id):
 
     try:
 
-        # CHANNEL MESSAGE
-        msg = bot.get_messages(CHANNEL_ID, msg_id)
+        with bot:
+
+            msg = bot.get_messages(
+                CHANNEL_ID,
+                msg_id
+            )
+
+        if not msg:
+            return "❌ Message Not Found"
 
         media = msg.video or msg.document
 
+        if not media:
+            return "❌ Media Not Found"
+
         file_id = media.file_id
 
-        # FILE INFO
+        # TELEGRAM FILE INFO
         file_info = requests.get(
+
             f"https://api.telegram.org/bot{BOT_TOKEN}/getFile",
+
             params={
                 "file_id": file_id
             }
+
         ).json()
 
+        # CHECK
         if not file_info.get("ok"):
 
-            return "❌ File Not Found"
+            return f"❌ Telegram Error : {file_info}"
 
+        # FILE PATH
         file_path = file_info["result"]["file_path"]
 
+        # STREAM LINK
         stream_link = (
             f"https://api.telegram.org/file/bot"
             f"{BOT_TOKEN}/{file_path}"
         )
 
+        # MX PLAYER
         mx = (
             f"intent:{stream_link}"
             "#Intent;type=video/*;"
             "package=com.mxtech.videoplayer.ad;end"
         )
 
+        # VLC PLAYER
         vlc = (
             f"intent:{stream_link}"
             "#Intent;type=video/*;"
@@ -120,6 +138,7 @@ def watch(msg_id):
 
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta name="viewport"
@@ -198,6 +217,7 @@ href="{vlc}">
 </div>
 
 </body>
+
 </html>
 
 """)
