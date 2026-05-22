@@ -11,7 +11,6 @@ import os
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
-
 # =========================
 # DOMAIN
 # =========================
@@ -54,31 +53,17 @@ def home():
 
     body{
         margin:0;
+        background:#050018;
+        color:white;
         height:100vh;
         display:flex;
         justify-content:center;
         align-items:center;
-        background:#050018;
-        color:white;
         font-family:Arial;
     }
 
-    .box{
-        background:rgba(255,255,255,0.08);
-        backdrop-filter:blur(18px);
-        padding:40px;
-        border-radius:25px;
-        border:1px solid rgba(255,255,255,0.1);
-        box-shadow:0 0 30px rgba(108,76,255,0.4);
-        text-align:center;
-    }
-
     h1{
-        font-size:35px;
-    }
-
-    p{
-        color:#bbb;
+        font-size:40px;
     }
 
     </style>
@@ -87,13 +72,7 @@ def home():
 
     <body>
 
-    <div class="box">
-
-    <h1>CM4U.xo.je Official Website</h1>
-
-    <p>Glass UI Streaming Server Active</p>
-
-    </div>
+    <h1>🎬 CM4U STREAM SERVER</h1>
 
     </body>
 
@@ -102,7 +81,7 @@ def home():
     """
 
 # =========================
-# BOT MESSAGE
+# SAVE MOVIE
 # =========================
 
 @bot.on_message(filters.video | filters.document)
@@ -112,68 +91,83 @@ async def save_movie(client, message):
 
         media = message.video or message.document
 
-        # BIG FILE FIX
-        file_id = media.file_id
-        file_unique_id = media.file_unique_id
-
-        # STORE BETTER FILE ID
-        new_file = await client.get_messages(
-            chat_id=message.chat.id,
-            message_ids=message.id
-        )
-
-        media = new_file.video or new_file.document
-
         file_id = media.file_id
 
+        # LINK
         link = f"{RENDER_URL}/watch/{file_id}"
 
         await message.reply_text(
+
             f"✅ Uploaded Successfully\n\n🎬 Link:\n{link}"
+
         )
 
     except Exception as e:
 
-        await message.reply_text(f"ERROR : {e}")
+        await message.reply_text(
+
+            f"ERROR : {e}"
+
+        )
 
 # =========================
 # WATCH PAGE
 # =========================
 
-@app.route("/watch/<file_id>")
+@app.route("/watch/<path:file_id>")
 def watch(file_id):
 
     try:
 
+        # GET FILE
         file_info = requests.get(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
+
+            f"https://api.telegram.org/bot{BOT_TOKEN}/getFile",
+
+            params={
+                "file_id": file_id
+            }
+
         ).json()
 
-        if not file_info["ok"]:
+        # CHECK
+        if not file_info.get("ok"):
 
             return "❌ File Not Found"
 
+        # FILE PATH
         file_path = file_info["result"]["file_path"]
 
+        # STREAM LINK
         stream_link = (
-            f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+
+            f"https://api.telegram.org/file/bot"
+            f"{BOT_TOKEN}/{file_path}"
+
         )
 
+        # MX PLAYER
         mx = (
+
             f"intent:{stream_link}"
             "#Intent;type=video/*;"
             "package=com.mxtech.videoplayer.ad;end"
+
         )
 
+        # VLC PLAYER
         vlc = (
+
             f"intent:{stream_link}"
             "#Intent;type=video/*;"
             "package=org.videolan.vlc;end"
+
         )
 
         return render_template_string(f"""
 
 <!DOCTYPE html>
+
 <html>
 
 <head>
@@ -183,7 +177,7 @@ def watch(file_id):
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
 
-<title>CM4U</title>
+<title>CM4U STREAM</title>
 
 <style>
 
@@ -198,32 +192,28 @@ text-align:center;
 }}
 
 .container{{
-max-width:950px;
+max-width:900px;
 margin:auto;
 }}
 
 h2{{
-margin-bottom:20px;
+margin-bottom:15px;
 }}
 
 video{{
 width:100%;
 border-radius:18px;
 background:black;
-outline:none;
-box-shadow:
-0 0 25px rgba(0,0,0,0.5);
 }}
 
 .btn{{
 display:block;
-margin-top:12px;
+margin-top:14px;
 padding:15px;
 border-radius:14px;
-color:white;
 text-decoration:none;
 font-weight:bold;
-font-size:17px;
+color:white;
 }}
 
 .download{{
@@ -252,7 +242,7 @@ justify-content:center;
 
 <div class="container">
 
-<h2>CM4U.xo.je Official Website</h2>
+<h2>🎬 CM4U STREAM</h2>
 
 <!-- TOP BANNER -->
 
@@ -274,53 +264,15 @@ atOptions = {{
 
 <!-- SOCIAL BAR -->
 
-<script async="async"
-data-cfasync="false"
-src="https://pl29465338.effectivecpmnetwork.com/d88ed5a99ceb47c15d7d9de634ed832c/invoke.js"></script>
-
-<div id="container-d88ed5a99ceb47c15d7d9de634ed832c"></div>
+<script src="https://pl29465340.effectivecpmnetwork.com/c4/79/3b/c4793b9d80232e17ab5b1bcc7edb640f.js"></script>
 
 <!-- VIDEO -->
 
-<video
-controls
-autoplay
-preload="auto"
-playsinline
-controlsList="nodownload"
->
+<video controls autoplay preload="metadata">
 
 <source src="{stream_link}">
 
-Your browser does not support video.
-
 </video>
-
-<script>
-
-const video =
-document.querySelector('video');
-
-/* AUTO FULLSCREEN */
-
-video.addEventListener(
-'play',
-function(){{
-
-if(window.innerWidth < 800){{
-
-if(video.requestFullscreen){{
-
-video.requestFullscreen();
-
-}}
-
-}}
-
-}}
-);
-
-</script>
 
 <!-- BOTTOM BANNER -->
 
@@ -364,6 +316,7 @@ href="{vlc}">
 <script src="https://pl29465339.effectivecpmnetwork.com/4d/32/27/4d3227fddc75659508c78f4db2d6497e.js"></script>
 
 </body>
+
 </html>
 
 """)
@@ -378,9 +331,7 @@ href="{vlc}">
 
 def run_flask():
 
-    port = int(
-        os.environ.get("PORT", 10000)
-    )
+    port = int(os.environ.get("PORT", 10000))
 
     app.run(
         host="0.0.0.0",
@@ -393,10 +344,8 @@ def run_flask():
 
 if __name__ == "__main__":
 
-    Thread(
-        target=run_flask
-    ).start()
+    Thread(target=run_flask).start()
 
-    print("✅ Premium Stream Bot Started")
+    print("✅ CM4U STREAM BOT STARTED")
 
     bot.run()
