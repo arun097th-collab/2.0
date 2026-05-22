@@ -41,6 +41,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
+
     return """
 
     <html>
@@ -88,7 +89,7 @@ def home():
 
     <div class="box">
 
-    <h1>CM4U.xo.je. official website</h1>
+    <h1>CM4U.xo.je Official Website</h1>
 
     <p>Glass UI Streaming Server Active</p>
 
@@ -104,16 +105,15 @@ def home():
 # BOT MESSAGE
 # =========================
 
-@bot.on_message(filters.video | filters.document)
+@bot.on_message(filters.document)
 async def save_movie(client, message):
 
     try:
 
-        media = message.video or message.document
+        media = message.document
 
         file_id = media.file_id
 
-        # GENERATE LINK
         link = f"{RENDER_URL}/watch/{file_id}"
 
         await message.reply_text(
@@ -122,7 +122,9 @@ async def save_movie(client, message):
 
     except Exception as e:
 
-        await message.reply_text(f"ERROR : {e}")
+        await message.reply_text(
+            f"ERROR : {e}"
+        )
 
 # =========================
 # WATCH PAGE
@@ -138,67 +140,96 @@ def watch(file_id):
         ).json()
 
         if not file_info["ok"]:
+
             return "❌ File Not Found"
 
         file_path = file_info["result"]["file_path"]
 
-        stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+        stream_link = (
+            f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+        )
 
-        mx = f"intent:{stream_link}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end"
-        vlc = f"intent:{stream_link}#Intent;type=video/*;package=org.videolan.vlc;end"
+        mx = (
+            f"intent:{stream_link}"
+            "#Intent;type=video/*;"
+            "package=com.mxtech.videoplayer.ad;end"
+        )
+
+        vlc = (
+            f"intent:{stream_link}"
+            "#Intent;type=video/*;"
+            "package=org.videolan.vlc;end"
+        )
 
         return render_template_string(f"""
+
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
 <title>CM4U</title>
 
 <style>
 
 body{{
 margin:0;
-background:linear-gradient(135deg,#050018,#14003b,#240046);
+padding:15px;
+background:
+linear-gradient(135deg,#050018,#14003b,#240046);
 font-family:Arial;
 color:white;
 text-align:center;
-padding:15px;
 }}
 
 .container{{
 max-width:950px;
 margin:auto;
+}}
 
-
-
-
-border:1px solid rgba(255,255,255,0.1);
-
+h2{{
+margin-bottom:20px;
 }}
 
 video{{
 width:100%;
 border-radius:18px;
 background:black;
+outline:none;
+box-shadow:
+0 0 25px rgba(0,0,0,0.5);
 }}
 
 .btn{{
 display:block;
 margin-top:12px;
-padding:14px;
-border-radius:12px;
+padding:15px;
+border-radius:14px;
 color:white;
 text-decoration:none;
 font-weight:bold;
+font-size:17px;
 }}
 
-.download{{background:#6c4cff;}}
-.mx{{background:#00b894;}}
-.vlc{{background:#ff3838;}}
+.download{{
+background:#6c4cff;
+}}
+
+.mx{{
+background:#00b894;
+}}
+
+.vlc{{
+background:#ff3838;
+}}
 
 .adbox{{
-margin:10px 0;
+margin:15px 0;
 display:flex;
 justify-content:center;
 }}
@@ -211,75 +242,125 @@ justify-content:center;
 
 <div class="container">
 
-<h2>CM4U.xo.je. official website </h2>
+<h2>CM4U.xo.je Official Website</h2>
 
-<!-- 🔥 TOP AD -->
+<!-- TOP BANNER -->
+
 <div class="adbox">
+
 <script>
-  atOptions = {{
-    'key' : '5cf28619f37f1ae9afd5de4731cf2976',
-    'format' : 'iframe',
-    'height' : 60,
-    'width' : 468,
-    'params' : {{}}
-  }};
+atOptions = {{
+'key' : '5cf28619f37f1ae9afd5de4731cf2976',
+'format' : 'iframe',
+'height' : 60,
+'width' : 468,
+'params' : {{}}
+}};
 </script>
+
 <script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
+
 </div>
 
-<script async="async" data-cfasync="false" src="https://pl29465338.effectivecpmnetwork.com/d88ed5a99ceb47c15d7d9de634ed832c/invoke.js"></script>
+<!-- SOCIAL BAR -->
+
+<script async="async"
+data-cfasync="false"
+src="https://pl29465338.effectivecpmnetwork.com/d88ed5a99ceb47c15d7d9de634ed832c/invoke.js"></script>
+
 <div id="container-d88ed5a99ceb47c15d7d9de634ed832c"></div>
 
-<script src="https://pl29465340.effectivecpmnetwork.com/c4/79/3b/c4793b9d80232e17ab5b1bcc7edb640f.js"></script>
-
 <!-- VIDEO -->
-<video controls autoplay>
-<source src="{stream_link}" type="video/mp4">
+
+<video
+controls
+autoplay
+preload="auto"
+playsinline
+controlsList="nodownload"
+>
+
+<source src="{stream_link}">
+
+Your browser does not support video.
+
 </video>
 
-<!-- 🔥 BOTTOM AD -->
-<div class="adbox">
 <script>
-  atOptions = {{
-    'key' : '5cf28619f37f1ae9afd5de4731cf2976',
-    'format' : 'iframe',
-    'height' : 60,
-    'width' : 468,
-    'params' : {{}}
-  }};
+
+const video =
+document.querySelector('video');
+
+/* AUTO FULLSCREEN */
+
+video.addEventListener(
+'play',
+function(){{
+
+if(window.innerWidth < 800){{
+
+if(video.requestFullscreen){{
+
+video.requestFullscreen();
+
+}}
+
+}}
+
+}}
+);
+
 </script>
-<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
-</div>
-<!-- 🔥 BOTTOM AD -->
+
+<!-- BOTTOM BANNER -->
+
 <div class="adbox">
+
 <script>
-  atOptions = {{
-    'key' : '5cf28619f37f1ae9afd5de4731cf2976',
-    'format' : 'iframe',
-    'height' : 60,
-    'width' : 468,
-    'params' : {{}}
-  }};
+atOptions = {{
+'key' : '5cf28619f37f1ae9afd5de4731cf2976',
+'format' : 'iframe',
+'height' : 60,
+'width' : 468,
+'params' : {{}}
+}};
 </script>
+
 <script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
+
 </div>
 
 <!-- BUTTONS -->
-<a class="btn download" href="{stream_link}">⬇ Download</a>
-<a class="btn mx" href="{mx}">▶ MX Player</a>
-<a class="btn vlc" href="{vlc}">▶ VLC Player</a>
+
+<a class="btn download"
+href="{stream_link}">
+⬇ Download
+</a>
+
+<a class="btn mx"
+href="{mx}">
+▶ MX Player
+</a>
+
+<a class="btn vlc"
+href="{vlc}">
+▶ VLC Player
+</a>
 
 </div>
-<!-- POPUNDER AD -->
+
+<!-- POPUNDER -->
+
 <script src="https://pl29465339.effectivecpmnetwork.com/4d/32/27/4d3227fddc75659508c78f4db2d6497e.js"></script>
 
 </body>
-
 </html>
+
 """)
 
     except Exception as e:
-        return f"ERROR: {e}"
+
+        return f"ERROR : {e}"
 
 # =========================
 # RUN FLASK
@@ -287,7 +368,9 @@ justify-content:center;
 
 def run_flask():
 
-    port = int(os.environ.get("PORT", 10000))
+    port = int(
+        os.environ.get("PORT", 10000)
+    )
 
     app.run(
         host="0.0.0.0",
@@ -300,7 +383,9 @@ def run_flask():
 
 if __name__ == "__main__":
 
-    Thread(target=run_flask).start()
+    Thread(
+        target=run_flask
+    ).start()
 
     print("✅ Premium Stream Bot Started")
 
