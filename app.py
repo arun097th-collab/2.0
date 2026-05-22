@@ -1,7 +1,6 @@
 from pyrogram import Client, filters
 from flask import Flask, render_template_string
 from threading import Thread
-from urllib.parse import quote
 import requests
 import os
 
@@ -12,7 +11,9 @@ import os
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
-CHANNEL_ID = -1003502272528
+
+# CHANNEL USERNAME
+CHANNEL_ID = "@cm4u data"
 
 RENDER_URL = "https://two-0-uzcf.onrender.com"
 
@@ -93,15 +94,11 @@ async def save_movie(client, message):
             chat_id=CHANNEL_ID
         )
 
-        media = copied.video or copied.document
-
-        file_id = media.file_id
-
-        # SAFE FILE ID
-        safe_file_id = quote(file_id)
+        # MESSAGE ID
+        message_id = copied.id
 
         # LINK
-        link = f"{RENDER_URL}/watch/{safe_file_id}"
+        link = f"{RENDER_URL}/watch/{message_id}"
 
         await message.reply_text(
 
@@ -121,12 +118,24 @@ async def save_movie(client, message):
 # WATCH PAGE
 # =========================
 
-@app.route("/watch/<path:file_id>")
-def watch(file_id):
+@app.route("/watch/<int:message_id>")
+def watch(message_id):
 
     try:
 
-        # GET FILE INFO
+        # GET MESSAGE
+        msg = bot.get_messages(
+            CHANNEL_ID,
+            message_id
+        )
+
+        # MEDIA
+        media = msg.video or msg.document
+
+        # FILE ID
+        file_id = media.file_id
+
+        # TELEGRAM FILE INFO
         file_info = requests.get(
 
             f"https://api.telegram.org/bot{BOT_TOKEN}/getFile",
