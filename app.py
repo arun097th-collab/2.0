@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from flask import Flask, render_template_string
+from flask import Flask
 from threading import Thread
 import requests
 import os
@@ -12,7 +12,7 @@ BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 RENDER_URL = "https://two-0-uzcf.onrender.com"
 
 # PUBLIC CHANNEL USERNAME
-CHANNEL_USERNAME = "cm4umovies"
+CHANNEL = "@cm4umovies"
 
 bot = Client(
     "streambot",
@@ -37,13 +37,13 @@ async def save_movie(client, message):
     try:
 
         # FORWARD TO CHANNEL
-        copied = await message.copy(CHANNEL_USERNAME)
+        forwarded = await message.forward(CHANNEL)
 
-        media = copied.video or copied.document
+        # MESSAGE ID
+        msg_id = forwarded.id
 
-        file_id = media.file_id
-
-        link = f"{RENDER_URL}/watch/{file_id}"
+        # LINK
+        link = f"{RENDER_URL}/watch/{msg_id}"
 
         await message.reply_text(
             f"✅ Uploaded Successfully\n\n🎬 {link}"
@@ -57,11 +57,34 @@ async def save_movie(client, message):
 # WATCH
 # =========================
 
-@app.route("/watch/<path:file_id>")
-def watch(file_id):
+@app.route("/watch/<msg_id>")
+def watch(msg_id):
 
     try:
 
+        # GET MESSAGE
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/getUpdates"
+
+        data = requests.get(url).json()
+
+        file_id = None
+
+        for update in data["result"]:
+
+            msg = update.get("channel_post")
+
+            if msg and str(msg["message_id"]) == str(msg_id):
+
+                if "video" in msg:
+                    file_id = msg["video"]["file_id"]
+
+                elif "document" in msg:
+                    file_id = msg["document"]["file_id"]
+
+        if not file_id:
+            return "❌ File Not Found"
+
+        # GET FILE
         file_info = requests.get(
             f"https://api.telegram.org/bot{BOT_TOKEN}/getFile",
             params={"file_id": file_id}
@@ -89,10 +112,12 @@ def watch(file_id):
             "package=org.videolan.vlc;end"
         )
 
-        return render_template_string(f"""
+        return f"""
 
 <html>
+
 <head>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -150,9 +175,10 @@ font-weight:bold;
 </a>
 
 </body>
+
 </html>
 
-""")
+"""
 
     except Exception as e:
         return f"ERROR : {e}"
@@ -165,10 +191,15 @@ def run_flask():
 
     port = int(os.environ.get("PORT", 10000))
 
-    app.run(host="0.0.0.0", port=port)
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
 
 if __name__ == "__main__":
 
     Thread(target=run_flask).start()
+
+    print("✅ BOT STARTED")
 
     bot.run()
