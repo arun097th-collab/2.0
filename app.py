@@ -105,12 +105,24 @@ def home():
 # BOT MESSAGE
 # =========================
 
-@bot.on_message(filters.document)
+@bot.on_message(filters.video | filters.document)
 async def save_movie(client, message):
 
     try:
 
-        media = message.document
+        media = message.video or message.document
+
+        # BIG FILE FIX
+        file_id = media.file_id
+        file_unique_id = media.file_unique_id
+
+        # STORE BETTER FILE ID
+        new_file = await client.get_messages(
+            chat_id=message.chat.id,
+            message_ids=message.id
+        )
+
+        media = new_file.video or new_file.document
 
         file_id = media.file_id
 
@@ -122,9 +134,7 @@ async def save_movie(client, message):
 
     except Exception as e:
 
-        await message.reply_text(
-            f"ERROR : {e}"
-        )
+        await message.reply_text(f"ERROR : {e}")
 
 # =========================
 # WATCH PAGE
