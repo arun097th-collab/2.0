@@ -12,14 +12,38 @@ API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
-# =========================
-# CHANNEL ID
-# =========================
+CHANNEL_ID = -1003502272528
 
-CHANNEL_ID = "-1003502272528"
+RENDER_URL = "https://two-0-uzcf.onrender.com"
 
 # =========================
-# SAVE MOVIE
+# BOT CREATE
+# =========================
+
+bot = Client(
+    "streambot",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN
+)
+
+# =========================
+# FLASK
+# =========================
+
+app = Flask(__name__)
+
+# =========================
+# HOME
+# =========================
+
+@app.route("/")
+def home():
+
+    return "<h1>CM4U STREAM BOT RUNNING</h1>"
+
+# =========================
+# SAVE VIDEO
 # =========================
 
 @bot.on_message(filters.video | filters.document)
@@ -27,91 +51,67 @@ async def save_movie(client, message):
 
     try:
 
-        # COPY TO CHANNEL
-        saved = await client.copy_message(
-
-            chat_id=int(CHANNEL_ID),
-
-            from_chat_id=message.chat.id,
-
-            message_id=message.id
-
+        # CHANNEL MA FORWARD
+        copied = await message.copy(
+            chat_id=CHANNEL_ID
         )
 
-        # MESSAGE ID
-        msg_id = saved.id
+        file_id = (
+            copied.video.file_id
+            if copied.video
+            else copied.document.file_id
+        )
 
         # LINK
-        link = f"{RENDER_URL}/watch/{msg_id}"
+        link = f"{RENDER_URL}/watch/{file_id}"
 
         await message.reply_text(
-
             f"✅ Uploaded Successfully\n\n🎬 Link:\n{link}"
-
         )
 
     except Exception as e:
 
         await message.reply_text(
-
             f"ERROR : {e}"
-
         )
 
 # =========================
-# WATCH PAGE
+# WATCH
 # =========================
 
-@app.route("/watch/<int:msg_id>")
-def watch(msg_id):
+@app.route("/watch/<path:file_id>")
+def watch(file_id):
 
     try:
 
-        # GET MESSAGE
-        msg = bot.get_messages(
+        file_info = requests.get(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/getFile",
+            params={
+                "file_id": file_id
+            }
+        ).json()
 
-            int(CHANNEL_ID),
+        if not file_info.get("ok"):
 
-            msg_id
+            return f"Telegram Error : {file_info}"
 
+        file_path = file_info["result"]["file_path"]
+
+        stream_link = (
+            f"https://api.telegram.org/file/bot"
+            f"{BOT_TOKEN}/{file_path}"
         )
 
-        # CHECK
-        if not msg:
-            return "❌ Message Not Found"
-
-        media = msg.video or msg.document
-
-        if not media:
-            return "❌ Media Not Found"
-
-        # TELEGRAM LINK
-        tg_link = (
-
-            f"https://t.me/c/"
-
-            f"{str(CHANNEL_ID)[4:]}/"
-
-            f"{msg_id}"
-
-        )
-
-        # MX PLAYER
         mx = (
-
-            f"intent:{tg_link}"
-
-            "#Intent;package=com.mxtech.videoplayer.ad;end"
-
+            f"intent:{stream_link}"
+            "#Intent;type=video/*;"
+            "package=com.mxtech.videoplayer.ad;end"
         )
 
-        # VLC PLAYER
         vlc = (
-
-            f"intent:{tg_link}"
-
-            "#Intent;package=org.videolan.vlc;end"
-
+            f"intent:{stream_link}"
+            "#Intent;type=video/*;"
+            "package=org.videolan.vlc;end"
         )
 
         return render_template_string(f"""
@@ -122,8 +122,6 @@ def watch(msg_id):
 
 <head>
 
-<meta charset="UTF-8">
-
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
 
@@ -133,66 +131,32 @@ content="width=device-width, initial-scale=1.0">
 
 body{{
 margin:0;
-padding:20px;
-background:
-linear-gradient(135deg,#050018,#14003b,#240046);
+padding:15px;
+background:#050018;
 font-family:Arial;
 color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-}}
-
-.container{{
-width:100%;
-max-width:650px;
-background:rgba(255,255,255,0.08);
-backdrop-filter:blur(18px);
-padding:30px;
-border-radius:25px;
 text-align:center;
-border:1px solid rgba(255,255,255,0.1);
 }}
 
-h1{{
-margin-bottom:25px;
+video{{
+width:100%;
+border-radius:15px;
+background:black;
 }}
 
 .btn{{
 display:block;
-width:100%;
-padding:18px;
-margin-top:15px;
-border-radius:16px;
+padding:15px;
+margin-top:12px;
+border-radius:12px;
 text-decoration:none;
 font-weight:bold;
-font-size:18px;
 color:white;
-transition:.3s;
 }}
 
-.btn:hover{{
-transform:scale(1.03);
-}}
-
-.download{{
-background:#6c4cff;
-}}
-
-.mx{{
-background:#00b894;
-}}
-
-.vlc{{
-background:#ff3838;
-}}
-
-.adbox{{
-margin:18px 0;
-display:flex;
-justify-content:center;
-}}
+.download{{background:#6c4cff;}}
+.mx{{background:#00b894;}}
+.vlc{{background:#ff3838;}}
 
 </style>
 
@@ -200,79 +164,28 @@ justify-content:center;
 
 <body>
 
-<div class="container">
+<h2>🎬 CM4U STREAM</h2>
 
-<h1>🎬 CM4U STREAM</h1>
+<video controls autoplay>
 
-<!-- TOP AD -->
+<source src="{stream_link}">
 
-<div class="adbox">
-
-<script>
-atOptions = {{
-'key' : '5cf28619f37f1ae9afd5de4731cf2976',
-'format' : 'iframe',
-'height' : 60,
-'width' : 468,
-'params' : {{}}
-}};
-</script>
-
-<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
-
-</div>
-
-<!-- DOWNLOAD -->
+</video>
 
 <a class="btn download"
-href="{tg_link}"
-target="_blank">
-
-⬇ DOWNLOAD MOVIE
-
+href="{stream_link}">
+⬇ Download
 </a>
-
-<!-- MX PLAYER -->
 
 <a class="btn mx"
 href="{mx}">
-
-▶ PLAY IN MX PLAYER
-
+▶ MX Player
 </a>
-
-<!-- VLC PLAYER -->
 
 <a class="btn vlc"
 href="{vlc}">
-
-▶ PLAY IN VLC PLAYER
-
+▶ VLC Player
 </a>
-
-<!-- BOTTOM AD -->
-
-<div class="adbox">
-
-<script>
-atOptions = {{
-'key' : '5cf28619f37f1ae9afd5de4731cf2976',
-'format' : 'iframe',
-'height' : 60,
-'width' : 468,
-'params' : {{}}
-}};
-</script>
-
-<script src="https://www.highperformanceformat.com/5cf28619f37f1ae9afd5de4731cf2976/invoke.js"></script>
-
-</div>
-
-</div>
-
-<!-- POPUNDER -->
-
-<script src="https://pl29465339.effectivecpmnetwork.com/4d/32/27/4d3227fddc75659508c78f4db2d6497e.js"></script>
 
 </body>
 
@@ -283,23 +196,32 @@ atOptions = {{
     except Exception as e:
 
         return f"ERROR : {e}"
+
 # =========================
-# RUN
+# RUN FLASK
 # =========================
 
 def run_flask():
 
-    port = int(os.environ.get("PORT", 10000))
+    port = int(
+        os.environ.get("PORT", 10000)
+    )
 
     app.run(
         host="0.0.0.0",
         port=port
     )
 
+# =========================
+# START
+# =========================
+
 if __name__ == "__main__":
 
-    Thread(target=run_flask).start()
+    Thread(
+        target=run_flask
+    ).start()
 
-    print("✅ CM4U STREAM BOT STARTED")
+    print("✅ BOT STARTED")
 
     bot.run()
