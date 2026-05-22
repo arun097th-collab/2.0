@@ -12,37 +12,11 @@ API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
-# BOT JE CHANNEL MA ADMIN CHE
-CHANNEL_ID = -1003502272528
-
-RENDER_URL = "https://two-0-uzcf.onrender.com"
-
 # =========================
-# BOT
+# CHANNEL ID
 # =========================
 
-bot = Client(
-    "streambot",
-    api_id=API_ID,
-    api_hash=API_HASH,
-    bot_token=BOT_TOKEN
-)
-
-app = Flask(__name__)
-
-# =========================
-# HOME
-# =========================
-
-@app.route("/")
-def home():
-
-    return """
-    <h1 style='color:white;text-align:center;
-    margin-top:40vh;background:#050018'>
-    🎬 CM4U STREAM SERVER
-    </h1>
-    """
+CHANNEL_ID = "-1003502272528"
 
 # =========================
 # SAVE MOVIE
@@ -53,21 +27,36 @@ async def save_movie(client, message):
 
     try:
 
-        # CHANNEL MA FORWARD
-        saved = await message.copy(CHANNEL_ID)
+        # COPY TO CHANNEL
+        saved = await client.copy_message(
 
+            chat_id=int(CHANNEL_ID),
+
+            from_chat_id=message.chat.id,
+
+            message_id=message.id
+
+        )
+
+        # MESSAGE ID
         msg_id = saved.id
 
         # LINK
         link = f"{RENDER_URL}/watch/{msg_id}"
 
         await message.reply_text(
+
             f"✅ Uploaded Successfully\n\n🎬 Link:\n{link}"
+
         )
 
     except Exception as e:
 
-        await message.reply_text(f"ERROR : {e}")
+        await message.reply_text(
+
+            f"ERROR : {e}"
+
+        )
 
 # =========================
 # WATCH PAGE
@@ -80,8 +69,11 @@ def watch(msg_id):
 
         # GET MESSAGE
         msg = bot.get_messages(
-            CHANNEL_ID,
+
+            int(CHANNEL_ID),
+
             msg_id
+
         )
 
         # CHECK
@@ -93,23 +85,33 @@ def watch(msg_id):
         if not media:
             return "❌ Media Not Found"
 
-        # DIRECT TELEGRAM LINK
+        # TELEGRAM LINK
         tg_link = (
+
             f"https://t.me/c/"
+
             f"{str(CHANNEL_ID)[4:]}/"
+
             f"{msg_id}"
+
         )
 
         # MX PLAYER
         mx = (
+
             f"intent:{tg_link}"
+
             "#Intent;package=com.mxtech.videoplayer.ad;end"
+
         )
 
         # VLC PLAYER
         vlc = (
+
             f"intent:{tg_link}"
+
             "#Intent;package=org.videolan.vlc;end"
+
         )
 
         return render_template_string(f"""
@@ -239,7 +241,7 @@ href="{mx}">
 
 </a>
 
-<!-- VLC -->
+<!-- VLC PLAYER -->
 
 <a class="btn vlc"
 href="{vlc}">
