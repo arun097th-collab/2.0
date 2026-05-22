@@ -5,15 +5,12 @@ import requests
 import os
 
 # =========================
-# TELEGRAM CONFIG
+# CONFIG
 # =========================
 
 API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
-
-# CHANNEL USERNAME
-CHANNEL_ID = "@cm4umovies"
 
 RENDER_URL = "https://two-0-uzcf.onrender.com"
 
@@ -89,10 +86,8 @@ async def save_movie(client, message):
 
     try:
 
-        # CHANNEL MA COPY
-        copied = await message.copy(
-            chat_id=CHANNEL_ID
-        )
+        # SAVE TO SAVED MESSAGES
+        copied = await message.forward("me")
 
         # MESSAGE ID
         message_id = copied.id
@@ -125,7 +120,7 @@ def watch(message_id):
 
         # GET MESSAGE
         msg = bot.get_messages(
-            CHANNEL_ID,
+            "me",
             message_id
         )
 
@@ -135,7 +130,7 @@ def watch(message_id):
         # FILE ID
         file_id = media.file_id
 
-        # TELEGRAM FILE INFO
+        # GET FILE INFO
         file_info = requests.get(
 
             f"https://api.telegram.org/bot{BOT_TOKEN}/getFile",
