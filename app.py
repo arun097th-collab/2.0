@@ -63,16 +63,14 @@ def watch(msg_id):
 
     try:
 
-        with bot:
+        msg = bot.get_messages(CHANNEL, int(msg_id))
 
-           msg = bot.get_messages(CHANNEL, int(msg_id))
+        media = msg.video or msg.document
 
-media = msg.video or msg.document
-
-file_path = bot.download_media(
-    media.file_id,
-    file_name=f"downloads/{msg_id}"
-)
+        file_path = bot.download_media(
+            media.file_id,
+            file_name=f"downloads/{msg_id}"
+        )
 
         filename = os.path.basename(file_path)
 
@@ -92,8 +90,6 @@ file_path = bot.download_media(
 
         return render_template_string(f"""
 
-<!DOCTYPE html>
-
 <html>
 
 <head>
@@ -101,23 +97,14 @@ file_path = bot.download_media(
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
 
-<title>CM4U STREAM</title>
-
 <style>
 
 body{{
-margin:0;
-padding:15px;
-background:
-linear-gradient(135deg,#050018,#14003b,#240046);
-font-family:Arial;
+background:#050018;
 color:white;
+font-family:Arial;
+padding:20px;
 text-align:center;
-}}
-
-.container{{
-max-width:900px;
-margin:auto;
 }}
 
 video{{
@@ -132,8 +119,8 @@ margin-top:15px;
 padding:15px;
 border-radius:15px;
 text-decoration:none;
-font-weight:bold;
 color:white;
+font-weight:bold;
 }}
 
 .download{{background:#6c4cff;}}
@@ -145,8 +132,6 @@ color:white;
 </head>
 
 <body>
-
-<div class="container">
 
 <h2>🎬 CM4U STREAM</h2>
 
@@ -170,8 +155,6 @@ href="{mx}">
 href="{vlc}">
 ▶ VLC Player
 </a>
-
-</div>
 
 </body>
 
