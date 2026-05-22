@@ -65,14 +65,14 @@ def watch(msg_id):
 
         with bot:
 
-            msg = bot.get_messages(CHANNEL, int(msg_id))
+           msg = bot.get_messages(CHANNEL, int(msg_id))
 
-            media = msg.video or msg.document
+media = msg.video or msg.document
 
-            file_path = bot.download_media(
-                media.file_id,
-                file_name=f"downloads/{msg_id}"
-            )
+file_path = bot.download_media(
+    media.file_id,
+    file_name=f"downloads/{msg_id}"
+)
 
         filename = os.path.basename(file_path)
 
