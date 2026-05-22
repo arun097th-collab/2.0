@@ -7,10 +7,11 @@ API_ID = 21295053
 API_HASH = "297598578931dcc642c2519414079f8e"
 BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
+
 RENDER_URL = "https://two-0-uzcf.onrender.com"
 
 # PUBLIC CHANNEL USERNAME
-CHANNEL_USERNAME = "cm4umovies"
+CHANNEL = "cm4umovies"
 
 bot = Client(
     "streambot",
@@ -39,24 +40,14 @@ async def save_movie(client, message):
 
     try:
 
-        # COPY TO CHANNEL
-        copied = await message.copy(CHANNEL_USERNAME)
+        copied = await message.copy(CHANNEL)
 
-        # MESSAGE ID
         msg_id = copied.id
 
-        # TELEGRAM POST LINK
-        tg_link = f"https://t.me/{CHANNEL_USERNAME}/{msg_id}"
-
-        # WEBSITE LINK
-        web_link = f"{RENDER_URL}/watch/{msg_id}"
+        link = f"{RENDER_URL}/watch/{msg_id}"
 
         await message.reply_text(
-
-            f"✅ Uploaded Successfully\n\n"
-            f"🎬 Stream Link:\n{web_link}\n\n"
-            f"📢 Telegram Post:\n{tg_link}"
-
+            f"✅ Uploaded Successfully\n\n🎬 {link}"
         )
 
     except Exception as e:
@@ -64,24 +55,48 @@ async def save_movie(client, message):
         await message.reply_text(f"ERROR : {e}")
 
 # =========================
-# WATCH PAGE
+# WATCH
 # =========================
 
 @app.route("/watch/<msg_id>")
 def watch(msg_id):
 
-    # TELEGRAM POST
-    tg_embed = f"https://t.me/{CHANNEL_USERNAME}/{msg_id}?embed=1"
+    try:
 
-    html = f"""
+        with bot:
+
+            msg = bot.get_messages(CHANNEL, int(msg_id))
+
+            media = msg.video or msg.document
+
+            file_path = bot.download_media(
+                media.file_id,
+                file_name=f"downloads/{msg_id}"
+            )
+
+        filename = os.path.basename(file_path)
+
+        stream_link = f"{RENDER_URL}/file/{filename}"
+
+        mx = (
+            f"intent:{stream_link}"
+            "#Intent;type=video/*;"
+            "package=com.mxtech.videoplayer.ad;end"
+        )
+
+        vlc = (
+            f"intent:{stream_link}"
+            "#Intent;type=video/*;"
+            "package=org.videolan.vlc;end"
+        )
+
+        return render_template_string(f"""
 
 <!DOCTYPE html>
 
 <html>
 
 <head>
-
-<meta charset="UTF-8">
 
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
@@ -105,10 +120,8 @@ max-width:900px;
 margin:auto;
 }}
 
-iframe{{
+video{{
 width:100%;
-height:700px;
-border:none;
 border-radius:20px;
 background:black;
 }}
@@ -123,9 +136,9 @@ font-weight:bold;
 color:white;
 }}
 
-.tg{{
-background:#229ED9;
-}}
+.download{{background:#6c4cff;}}
+.mx{{background:#00b894;}}
+.vlc{{background:#ff3838;}}
 
 </style>
 
@@ -137,15 +150,25 @@ background:#229ED9;
 
 <h2>🎬 CM4U STREAM</h2>
 
-<!-- TELEGRAM EMBED -->
+<video controls autoplay>
 
-<iframe src="{tg_embed}"></iframe>
+<source src="{stream_link}">
 
-<!-- OPEN TELEGRAM -->
+</video>
 
-<a class="btn tg"
-href="https://t.me/{CHANNEL_USERNAME}/{msg_id}">
-📢 Open In Telegram
+<a class="btn download"
+href="{stream_link}">
+⬇ Download
+</a>
+
+<a class="btn mx"
+href="{mx}">
+▶ MX Player
+</a>
+
+<a class="btn vlc"
+href="{vlc}">
+▶ VLC Player
 </a>
 
 </div>
@@ -154,17 +177,36 @@ href="https://t.me/{CHANNEL_USERNAME}/{msg_id}">
 
 </html>
 
-"""
+""")
 
-    return render_template_string(html)
+    except Exception as e:
+
+        return f"ERROR : {e}"
 
 # =========================
-# RUN FLASK
+# FILE SERVER
+# =========================
+
+@app.route("/file/<filename>")
+def file(filename):
+
+    from flask import send_from_directory
+
+    return send_from_directory(
+        "downloads",
+        filename,
+        as_attachment=False
+    )
+
+# =========================
+# RUN
 # =========================
 
 def run_flask():
 
     port = int(os.environ.get("PORT", 10000))
+
+    os.makedirs("downloads", exist_ok=True)
 
     app.run(
         host="0.0.0.0",
