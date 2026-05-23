@@ -1,155 +1,22 @@
-from pyrogram import Client, filters
-from flask import Flask, render_template_string
-from threading import Thread
-import requests
-import os
+import telebot
 
-API_ID = 21295053
-API_HASH = "297598578931dcc642c2519414079f8e"
-BOT_TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
+TOKEN = "8653018611:AAGtxeIlVsrWJriE08hrZEsRfII-YVLYUcY"
 
+bot = telebot.TeleBot(TOKEN)
 
-RENDER_URL = "https://two-0-uzcf.onrender.com"
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.reply_to(message, "Send Video 🎬")
 
-# MUST BE PUBLIC CHANNEL USERNAME
-CHANNEL = "cm4umovies"
+@bot.message_handler(content_types=['video','document'])
+def video(message):
 
-bot = Client(
-    "streambot",
-    api_id=API_ID,
-    api_hash=API_HASH,
-    bot_token=BOT_TOKEN
-)
+    file_id = message.video.file_id if message.video else message.document.file_id
 
-app = Flask(__name__)
+    bot.reply_to(
+        message,
+        f"Saved ✅\n\nFile ID:\n{file_id}"
+    )
 
-# =========================
-# HOME
-# =========================
-@app.route("/")
-def home():
-    return "CM4U STREAM RUNNING"
-
-# =========================
-# SAVE VIDEO
-# =========================
-@bot.on_message(filters.video | filters.document)
-async def save_movie(client, message):
-
-    try:
-        copied = await message.copy(CHANNEL)
-
-        msg_id = copied.id
-
-        link = f"{RENDER_URL}/watch/{msg_id}"
-
-        await message.reply_text(
-            f"✅ Uploaded Successfully\n\n🎬 Watch Link:\n{link}"
-        )
-
-    except Exception as e:
-        await message.reply_text(f"ERROR : {e}")
-
-# =========================
-# STREAM PAGE
-# =========================
-@app.route("/watch/<msg_id>")
-def watch(msg_id):
-
-    try:
-
-        # GET MESSAGE FROM CHANNEL
-        msg = bot.get_messages(CHANNEL, int(msg_id))
-
-        media = msg.video or msg.document
-
-        # GET FILE VIA TELEGRAM API (FAST + WORKS FOR 1GB)
-        tg = requests.get(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/getFile",
-            params={"file_id": media.file_id}
-        ).json()
-
-        if not tg.get("ok"):
-            return f"Telegram Error: {tg}"
-
-        file_path = tg["result"]["file_path"]
-
-        stream_link = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
-
-        mx = f"intent:{stream_link}#Intent;type=video/*;package=com.mxtech.videoplayer.ad;end"
-        vlc = f"intent:{stream_link}#Intent;type=video/*;package=org.videolan.vlc;end"
-
-        return render_template_string(f"""
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>CM4U STREAM</title>
-
-<style>
-body {{
-    margin:0;
-    padding:20px;
-    background:linear-gradient(135deg,#050018,#14003b,#240046);
-    font-family:Arial;
-    color:white;
-    text-align:center;
-}}
-
-video {{
-    width:100%;
-    border-radius:20px;
-    background:black;
-}}
-
-.btn {{
-    display:block;
-    margin-top:15px;
-    padding:15px;
-    border-radius:15px;
-    text-decoration:none;
-    font-weight:bold;
-    color:white;
-}}
-
-.download {{background:#6c4cff;}}
-.mx {{background:#00b894;}}
-.vlc {{background:#ff3838;}}
-</style>
-
-</head>
-
-<body>
-
-<h2>🎬 CM4U STREAM</h2>
-
-<video controls autoplay>
-<source src="{stream_link}">
-</video>
-
-<a class="btn download" href="{stream_link}">⬇ Download</a>
-<a class="btn mx" href="{mx}">▶ MX Player</a>
-<a class="btn vlc" href="{vlc}">▶ VLC Player</a>
-
-</body>
-</html>
-""")
-
-    except Exception as e:
-        return f"ERROR : {e}"
-
-# =========================
-# RUN FLASK
-# =========================
-def run_flask():
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
-
-# =========================
-# START BOT
-# =========================
-if __name__ == "__main__":
-    Thread(target=run_flask).start()
-    print("CM4U BOT STARTED")
-    bot.run()
+print("Bot Started...")
+bot.infinity_polling()
